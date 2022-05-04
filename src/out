@@ -1,0 +1,26 @@
+36a37
+> 
+59a61,62
+>     vector<float> dist(3,0.0);
+>     float dist2;
+65,66d67
+<     vector<float> dist(3,0.0);
+<     float dist2;
+88,94c89
+<                 omp_set_dynamic(0);
+<                 //int THREADSIZE = omp_get_num_threads();
+<                 //int THREADSIZE = atoi(std::getenv("OMP_NUM_THREADS"));
+<                 int THREADSIZE = 1; 
+<                 #pragma omp parallel default(shared) private(dist,dist2) num_threads(THREADSIZE)
+< //                #pragma omp for reduction (+:nshell_single) //schedule(dynamic) nowait
+<                 #pragma omp for schedule(dynamic,1) nowait reduction (+:nshell_single)
+---
+> 	        for (int ind1 : segment) {
+97,99d91
+< 	        for (int ind_seg=0; ind_seg < segment.size(); ind_seg++) {
+<                     int ind1 = segment[ind_seg];
+<                 //    std::cout << "Current thread number: " << omp_get_thread_num() << std::endl;
+101d92
+< 
+135a127
+> 
