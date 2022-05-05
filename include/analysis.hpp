@@ -89,6 +89,10 @@ public:
     string which_density_profile = "mass";
     float dist_crit;
     float dr;
+    float cellsize = 5.0;
+    int xcount; 
+    int ycount; 
+    int zcount; 
 
     // no public attributes
     // public methods

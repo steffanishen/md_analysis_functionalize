@@ -57,7 +57,33 @@ ANALYSIS_FUNCTIONALIZE::ANALYSIS_FUNCTIONALIZE(PSF *system, GROUP *sel1, GROUP *
 void ANALYSIS_FUNCTIONALIZE::init() {
 }
 
-vector<float> ANALYSIS_FUNCTIONALIZE::compute_vector() {
+vector<vector<vector<int>>> ANALYSIS_FUNCTIONALIZE::head_cell(vector<vector<int>> segments_ind) {
+    vector<vector<vector<int>>> head;
+    head.resize(xcount,vector<vector<int>>(ycount,vector<int>(zcount,-1)));//,vector<int>(zcount)));
+
+    int ixcell,iycell,izcell;
+     for (auto &segment:segments_ind) {
+	    for (int ind : segment) {
+            ixcell = int ((system->x[ind] + system->pbc[0]*0.5)/cellsize);
+            if (ixcell < 0) ixcell = 0;
+            else if (ixcell > xcount-1) ixcell = xcount - 1;
+
+            iycell = int ((system->y[ind] + system->pbc[1]*0.5)/cellsize);
+            if (iycell < 0) iycell = 0;
+            else if (iycell > ycount-1) iycell = ycount - 1;
+
+            izcell = int ((system->z[ind] + system->pbc[2]*0.5)/cellsize);
+            if (izcell < 0) izcell = 0;
+            else if (izcell > zcount-1) izcell = zcount - 1;
+
+            linkedlist[ind] = head[ixcell][iycell][izcell];
+            head[ixcell][iycell][izcell] = ind;
+        }
+    }
+    return head;
+}
+
+void ANALYSIS_FUNCTIONALIZE::compute_void() {
     sel1->anglezs.clear();
     vector<float> r(3,0.0);
     vector<float> r1(3,0.0);
@@ -86,18 +112,20 @@ vector<float> ANALYSIS_FUNCTIONALIZE::compute_vector() {
     //cout << "sel2->NATOM: " << sel2->NATOM << endl; //for debug purpose
 //    cout << "M_PI" << M_PI << endl;// for debug purpose
 
-    float cellsize = 5.0;
-    int xcount = int(system->pbc[0]/cellsize);
-    int ycount = int(system->pbc[1]/cellsize);
-    int zcount = int(system->pbc[2]/cellsize);
+    xcount = int(system->pbc[0]/cellsize);
+    ycount = int(system->pbc[1]/cellsize);
+    zcount = int(system->pbc[2]/cellsize);
 
-    system->head.resize(xcount,vector<int>(ycount));//,vector<int>(zcount)));
+    linkedlist.resize(system->NATOM);
 
-    for (auto &segment:sel1->segments_ind) {
-	for (int ind : segment) {
-        }
-    }
+    vector<vector<vector<int>>> head1 = head_cell(sel1->segments_ind);
+    vector<vector<vector<int>>> head2 = head_cell(sel2->segments_ind);
 
+    int xcount = head1.size();
+    int ycount = head1[0].size();
+    int zcount = head1[0][0].size();
+
+    
  
     for (auto &segment:sel1->segments_ind) {
 	for (int ind : segment) {
@@ -142,7 +170,7 @@ vector<float> ANALYSIS_FUNCTIONALIZE::compute_vector() {
 /*
 */
 
-    return rdf;
+
 }
 
 

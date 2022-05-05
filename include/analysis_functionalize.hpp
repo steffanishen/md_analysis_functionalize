@@ -45,11 +45,15 @@ public:
 //    GROUP *sel1;
  //   int whichN;
     //
+    vector<int> linkedlist;
+
     ANALYSIS_FUNCTIONALIZE(PSF *system, GROUP *sel1, GROUP *sel2, int vector1d, int vector2d, int voidf, string filename, float dist_crit, float dr); //constructor
     
     void init();
 
-    vector<float> compute_vector();
+    vector<vector<vector<int>>> head_cell(vector<vector<int>> segments_ind);
+
+    void compute_void();
      
     ~ANALYSIS_FUNCTIONALIZE();
 
