@@ -52,6 +52,7 @@ ANALYSIS_FUNCTIONALIZE::ANALYSIS_FUNCTIONALIZE(PSF *system, GROUP *sel1, GROUP *
     this->rdf_count.resize(nbins);
     fill(this->rdf_count.begin(), this->rdf_count.end(),0.0);
     this->iframe = 0;
+    this->system->crosslinking_flag.resize(system->NATOM,0);
 }
 
 void ANALYSIS_FUNCTIONALIZE::init() {
@@ -83,11 +84,21 @@ vector<vector<vector<int>>> ANALYSIS_FUNCTIONALIZE::head_cell(vector<vector<int>
     return head;
 }
 
+int ANALYSIS_FUNCTIONALIZE::neighbor_cell_ind(int i, int i_incr, int n) {
+    int i_adj;
+    i_adj = i + i_incr;
+    if (i_adj < 0) i_adj += n;
+    if (i_adj >= n) i_adj -= n;
+    return i_adj;
+}
+
 void ANALYSIS_FUNCTIONALIZE::compute_void() {
     sel1->anglezs.clear();
     vector<float> r(3,0.0);
     vector<float> r1(3,0.0);
     vector<float> disp(3,0.0);
+    vector<float> distances;
+    vector<vector<int>> candidate_pairs;
     float dist2;
     int izbin;
     float Avogadro = 6.02e23;
@@ -125,51 +136,51 @@ void ANALYSIS_FUNCTIONALIZE::compute_void() {
     int ycount = head1[0].size();
     int zcount = head1[0][0].size();
 
-    
- 
-    for (auto &segment:sel1->segments_ind) {
-	for (int ind : segment) {
-	    r[0] = system->x[ind];
-	    r[1] = system->y[ind];
-	    r[2] = system->z[ind];
 
-    //cout << "sel1->atom_index: " << system->atom_index[ind] << endl; //for debug purpose
-    //cout << "sel1->atomtype: " << system->atomtype[ind] << endl; //for debug purpose
+// Find the distance between possible croslinking pairs
+    for (int i = 0; i < xcount; i++) {
+        for (int j = 0; j < ycount; j++) {
+            for (int k = 0; k < zcount; k++) {
+                int ind1 = head1[i][j][k];
+                while (1) {
+                    if (ind1 < 0) break;
+                    r[0] = system->x[ind1];
+	                r[1] = system->y[ind1];
+	                r[2] = system->z[ind1];
+                    for (int iprime = -1; iprime <=1; iprime++) {
+                        int i2 = neighbor_cell_ind(i,iprime,xcount);
+                        for (int jprime = -1; jprime <=1; jprime++) {
+                            int j2 = neighbor_cell_ind(j,jprime,ycount);
+                            for (int kprime = -1; kprime <=1; kprime++) {
+                                int k2 = neighbor_cell_ind(k,kprime,zcount);
+                                int ind2 = head2[i2][j2][k2];
+                                while (1) {
+                                    if (ind2 < 0) break;
+                                    r1[0] = system->x[ind2];
+	                                r1[1] = system->y[ind2];
+	                                r1[2] = system->z[ind2];
 
-            for (auto &segment:sel2->segments_ind) {
-	        for (int ind1 : segment) {
-	            r1[0] = system->x[ind1];
-	            r1[1] = system->y[ind1];
-	            r1[2] = system->z[ind1];
-                    
-	            disp = getDistPoints(r, r1);
-                    dist2 = disp[0]*disp[0] + disp[1]*disp[1] + disp[2]*disp[2];
-                    if (dist2 < dist_crit2) {
-                        dist = sqrt(dist2);
-                        int ibin = int(dist/dr);
-                        this->rdf_count[ibin] += 1.0;
+                                    disp = getDistPoints(r, r1);
+                                    dist2 = disp[0]*disp[0] + disp[1]*disp[1] + disp[2]*disp[2];
+                                    dist = sqrt(dist2);
+                                    
+                                    distances.push_back(dist);
+                                    candidate_pairs.push_back({ind1,ind2});
+
+                                    ind2 = linkedlist[ind2];
+                                }
+                            }
+                        }
                     }
- 
+                    ind1 = linkedlist[ind1];
                 }
             }
-	}
+        }
     }
 
-
-    for (int ibin = 0; ibin <= nbins; ibin++) {
-        float drp = dr * ibin;
-        float drn = dr * (ibin+1);
-        rdf[ibin] = this->rdf_count[ibin]/(this->iframe * 4.0/3.0 * PI * (drn*drn*drn - drp*drp*drp));
- //       cout <<"rdf: " << rdf[ibin] << endl;
-    }
-
-    for (int ibin = 0; ibin <= nbins; ibin++) {
-        float nideal = rdf[nbins-1];
-        rdf[ibin] /= nideal; 
-    }
-/*
-*/
-
+    vector<int> a_ind = heapSort(distances,distances.size());
+    
+ 
 
 }
 

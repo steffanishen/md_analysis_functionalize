@@ -52,6 +52,7 @@ public:
     void init();
 
     vector<vector<vector<int>>> head_cell(vector<vector<int>> segments_ind);
+    int neighbor_cell_ind(int i, int i_incr, int n);
 
     void compute_void();
      

@@ -144,7 +144,10 @@ public:
     virtual vector<vector<float>> bond_pre(int residueid, PSF *monomer);
     virtual vector<vector<float>> compute_2D_vector();   
     virtual vector<float> compute_vector();
-    
+
+    void heapify(vector<float> arr, vector<int> a_ind, int n, int i);
+    vector<int> heapSort(vector<float> arr, int n);
+
     virtual void compute_void();
  
     virtual ~ANALYSIS();

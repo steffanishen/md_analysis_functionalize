@@ -8,7 +8,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This program built for i386-apple-darwin11.3.0
  
 
-# Make data base, printed on Wed May  4 11:22:03 2022
+# Make data base, printed on Wed May  4 22:35:15 2022
 
 # Variables
 
@@ -48,7 +48,7 @@ VSCODE_VERBOSE_LOGGING = true
 # environment
 __CFBundleIdentifier = com.microsoft.VSCode
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /var/folders/4w/kxyzjp1s7gx0vhp0ztpqzsv40000gq/T/vscode-ipc-b052f419-3c3d-42ff-882e-c9775a0bf3b2.sock
+VSCODE_IPC_HOOK_EXTHOST = /var/folders/4w/kxyzjp1s7gx0vhp0ztpqzsv40000gq/T/vscode-ipc-44a83f89-a888-4702-bb47-04d409fecba1.sock
 # environment
 VSCODE_CWD = /
 # environment
@@ -60,11 +60,11 @@ ELECTRON_RUN_AS_NODE = 1
 # default
 .FEATURES := target-specific order-only second-expansion else-if archives jobserver check-symlink
 # environment
-SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.UPg5Muyj4D/Listeners
+SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.fihgw8gAlh/Listeners
 # automatic
 %F = $(notdir $%)
 # environment
-DISPLAY = /private/tmp/com.apple.launchd.A7ggcJ1JUb/org.xquartz:0
+DISPLAY = /private/tmp/com.apple.launchd.x5hKc0XHWI/org.xquartz:0
 # environment
 CONDA_EXE = /Users/meshen/anaconda3/bin/conda
 # environment
@@ -162,13 +162,13 @@ MAKELEVEL := 0
 # environment
 CONDA_PREFIX = /Users/meshen/anaconda3
 # environment
-VSCODE_PID = 58408
+VSCODE_PID = 1843
 # environment
 _CE_CONDA = 
 # environment
 LANG = C
 # variable set hash-table stats:
-# Load=77/1024=8%, Rehash=0, Collisions=6/110=5%
+# Load=77/1024=8%, Rehash=0, Collisions=5/107=5%
 
 # Pattern-specific Variable Values
 
@@ -176,9 +176,9 @@ LANG = C
 
 # Directories
 
-# . (device 16777229, inode 8349474): 18 files, no impossibilities.
-# ./src (device 16777229, inode 8349701): 33 files, no impossibilities.
-# src (device 16777229, inode 8349701): 33 files, no impossibilities.
+# . (device 16777232, inode 8349474): 18 files, no impossibilities.
+# ./src (device 16777232, inode 8349701): 33 files, no impossibilities.
+# src (device 16777232, inode 8349701): 33 files, no impossibilities.
 
 # 84 files, no impossibilities in 3 directories.
 
@@ -221,28 +221,10 @@ src/analysis_rotate.cpp:
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
-# Not a target:
-obj/output.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-all: read_dcd
-#  Command-line target.
-#  Implicit rule search has not been done.
-#  File does not exist.
-#  File has been updated.
-#  Needs to be updated (-q is set).
-# variable set hash-table stats:
-# Load=0/32=0%, Rehash=0, Collisions=0/5=0%
-#  commands to execute (from `Makefile', line 26):
-	@echo "Compilation Success"
-	
-
-obj/analysis.o: src/analysis.cpp
+obj/output.o: src/output.cpp
 #  Implicit rule search has been done.
-#  Implicit/static pattern stem: `analysis'
-#  Last modified 2022-05-04 11:20:41
+#  Implicit/static pattern stem: `output'
+#  Last modified 2022-05-04 14:54:06
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -251,6 +233,66 @@ obj/analysis.o: src/analysis.cpp
 	@$(MKDIR)
 	$(CXX) $(CXX_OPT) -c $< -o $@
 	
+
+# Not a target:
+src/dcd.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-04 11:10:49
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+all: read_dcd
+#  Command-line target.
+#  Implicit rule search has not been done.
+#  Implicit/static pattern stem: `'
+#  File does not exist.
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# automatic
+# @ := all
+# automatic
+# % := 
+# automatic
+# * := 
+# automatic
+# + := read_dcd
+# automatic
+# | := 
+# automatic
+# < := read_dcd
+# automatic
+# ^ := read_dcd
+# automatic
+# ? := read_dcd
+# variable set hash-table stats:
+# Load=8/32=25%, Rehash=0, Collisions=1/10=10%
+#  commands to execute (from `Makefile', line 26):
+	@echo "Compilation Success"
+	
+
+obj/analysis.o: src/analysis.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: `analysis'
+#  Last modified 2022-05-04 14:52:45
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 31):
+	@$(MKDIR)
+	$(CXX) $(CXX_OPT) -c $< -o $@
+	
+
+# Not a target:
+src/psf.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-04 11:10:48
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 # Not a target:
 src/analysis_energy.cpp:
@@ -264,18 +306,26 @@ src/analysis_energy.cpp:
 # Not a target:
 src/analysis_functionalize.cpp:
 #  Implicit rule search has been done.
-#  Last modified 2022-05-04 11:10:49
+#  Last modified 2022-05-04 15:25:30
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
-# Not a target:
-obj/atom.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+obj/atom.o: src/atom.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: `atom'
+#  Last modified 2022-05-04 14:54:03
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 31):
+	@$(MKDIR)
+	$(CXX) $(CXX_OPT) -c $< -o $@
+	
 
+ 
 # Not a target:
 src/analysis_avedangles_seg.cpp:
 #  Implicit rule search has been done.
@@ -287,16 +337,15 @@ src/analysis_avedangles_seg.cpp:
 
 read_dcd: obj/analysis.o obj/analysis_anglezs_rings.o obj/analysis_avedangles_seg.o obj/analysis_density_profile.o obj/analysis_energy.o obj/analysis_functionalize.o obj/analysis_mindangles_seg.o obj/analysis_mindangles_seg_dislocated.o obj/analysis_msd.o obj/analysis_msd_region.o obj/analysis_packing.o obj/analysis_pointers.o obj/analysis_random_walk.o obj/analysis_rdf.o obj/analysis_rotate.o obj/analysis_scale.o obj/analysis_shell.o obj/analysis_straight_chain.o obj/atom.o obj/dcd.o obj/dcd_r.o obj/error.o obj/group.o obj/input.o obj/main.o obj/output.o obj/psf.o Makefile
 #  Implicit rule search has not been done.
-#  Last modified 2022-05-04 11:10:41
+#  Last modified 2022-05-04 15:25:33
 #  File has been updated.
-#  Needs to be updated (-q is set).
+#  Successfully updated.
 # variable set hash-table stats:
-# Load=0/32=0%, Rehash=0, Collisions=0/5=0%
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 #  commands to execute (from `Makefile', line 35):
 	$(CXX) $(CXX_OPT) $(LD_LIB) $(OBJ) -o $@ $(LD_OPT)
 	
 
- 
 # Not a target:
 src/analysis_msd.cpp:
 #  Implicit rule search has been done.
@@ -315,11 +364,18 @@ src/analysis.cpp:
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
-# Not a target:
-obj/main.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+obj/main.o: src/main.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: `main'
+#  Last modified 2022-05-04 14:54:06
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 31):
+	@$(MKDIR)
+	$(CXX) $(CXX_OPT) -c $< -o $@
+	
 
 # Not a target:
 .SUFFIXES:
@@ -336,11 +392,18 @@ Makefile:
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
-# Not a target:
-obj/error.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+obj/error.o: src/error.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: `error'
+#  Last modified 2022-05-04 14:54:04
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 31):
+	@$(MKDIR)
+	$(CXX) $(CXX_OPT) -c $< -o $@
+	
 
 # Not a target:
 src/analysis_msd_region.cpp:
@@ -354,7 +417,7 @@ src/analysis_msd_region.cpp:
 obj/analysis_anglezs_rings.o: src/analysis_anglezs_rings.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: `analysis_anglezs_rings'
-#  Last modified 2022-05-04 11:20:42
+#  Last modified 2022-05-04 14:52:46
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -367,7 +430,7 @@ obj/analysis_anglezs_rings.o: src/analysis_anglezs_rings.cpp
 obj/analysis_scale.o: src/analysis_scale.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: `analysis_scale'
-#  Last modified 2022-05-04 11:20:49
+#  Last modified 2022-05-04 14:54:01
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -380,7 +443,7 @@ obj/analysis_scale.o: src/analysis_scale.cpp
 # Not a target:
 src/analysis_shell.cpp:
 #  Implicit rule search has been done.
-#  Last modified 2022-05-04 11:10:48
+#  Last modified 2022-05-04 11:27:00
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -389,7 +452,7 @@ src/analysis_shell.cpp:
 obj/analysis_pointers.o: src/analysis_pointers.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: `analysis_pointers'
-#  Last modified 2022-05-04 11:20:47
+#  Last modified 2022-05-04 14:53:59
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -399,16 +462,23 @@ obj/analysis_pointers.o: src/analysis_pointers.cpp
 	$(CXX) $(CXX_OPT) -c $< -o $@
 	
 
-# Not a target:
-obj/group.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+obj/group.o: src/group.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: `group'
+#  Last modified 2022-05-04 14:54:04
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 31):
+	@$(MKDIR)
+	$(CXX) $(CXX_OPT) -c $< -o $@
+	
 
 obj/analysis_mindangles_seg.o: src/analysis_mindangles_seg.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: `analysis_mindangles_seg'
-#  Last modified 2022-05-04 11:20:44
+#  Last modified 2022-05-04 14:53:56
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -421,7 +491,7 @@ obj/analysis_mindangles_seg.o: src/analysis_mindangles_seg.cpp
 obj/analysis_packing.o: src/analysis_packing.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: `analysis_packing'
-#  Last modified 2022-05-04 11:20:46
+#  Last modified 2022-05-04 14:53:58
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -432,15 +502,31 @@ obj/analysis_packing.o: src/analysis_packing.cpp
 	
 
 # Not a target:
-obj/input.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+src/dcd_r.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-04 11:10:50
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+obj/input.o: src/input.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: `input'
+#  Last modified 2022-05-04 14:54:05
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 31):
+	@$(MKDIR)
+	$(CXX) $(CXX_OPT) -c $< -o $@
+	
 
 obj/analysis_mindangles_seg_dislocated.o: src/analysis_mindangles_seg_dislocated.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: `analysis_mindangles_seg_dislocated'
-#  Last modified 2022-05-04 11:20:45
+#  Last modified 2022-05-04 14:53:56
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -453,7 +539,7 @@ obj/analysis_mindangles_seg_dislocated.o: src/analysis_mindangles_seg_dislocated
 obj/analysis_rdf.o: src/analysis_rdf.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: `analysis_rdf'
-#  Last modified 2022-05-04 11:20:48
+#  Last modified 2022-05-04 14:54:00
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -463,16 +549,23 @@ obj/analysis_rdf.o: src/analysis_rdf.cpp
 	$(CXX) $(CXX_OPT) -c $< -o $@
 	
 
-# Not a target:
-obj/analysis_straight_chain.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+obj/analysis_straight_chain.o: src/analysis_straight_chain.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: `analysis_straight_chain'
+#  Last modified 2022-05-04 14:54:02
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 31):
+	@$(MKDIR)
+	$(CXX) $(CXX_OPT) -c $< -o $@
+	
 
 obj/analysis_random_walk.o: src/analysis_random_walk.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: `analysis_random_walk'
-#  Last modified 2022-05-04 11:20:48
+#  Last modified 2022-05-04 14:54:00
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -485,9 +578,10 @@ obj/analysis_random_walk.o: src/analysis_random_walk.cpp
 obj/analysis_density_profile.o: src/analysis_density_profile.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: `analysis_density_profile'
-#  Last modified 2022-05-04 11:20:43
+#  Last modified 2022-05-04 14:52:46
 #  File has been updated.
 #  Successfully updated.
+ 
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 #  commands to execute (from `Makefile', line 31):
@@ -498,7 +592,7 @@ obj/analysis_density_profile.o: src/analysis_density_profile.cpp
 obj/analysis_rotate.o: src/analysis_rotate.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: `analysis_rotate'
-#  Last modified 2022-05-04 11:20:49
+#  Last modified 2022-05-04 14:54:00
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -514,22 +608,45 @@ obj/analysis_rotate.o: src/analysis_rotate.cpp
 #  Modification time never checked.
 #  File has not been updated.
 
-# Not a target:
-obj/dcd.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+obj/dcd.o: src/dcd.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: `dcd'
+#  Last modified 2022-05-04 14:54:03
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 31):
+	@$(MKDIR)
+	$(CXX) $(CXX_OPT) -c $< -o $@
+	
 
 # Not a target:
-obj/psf.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+src/atom.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-04 11:10:50
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+obj/psf.o: src/psf.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: `psf'
+#  Last modified 2022-05-04 14:54:07
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 31):
+	@$(MKDIR)
+	$(CXX) $(CXX_OPT) -c $< -o $@
+	
 
 obj/analysis_energy.o: src/analysis_energy.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: `analysis_energy'
-#  Last modified 2022-05-04 11:20:43
+#  Last modified 2022-05-04 14:52:47
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -542,7 +659,7 @@ obj/analysis_energy.o: src/analysis_energy.cpp
 obj/analysis_functionalize.o: src/analysis_functionalize.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: `analysis_functionalize'
-#  Last modified 2022-05-04 11:20:44
+#  Last modified 2022-05-04 15:25:33
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -563,7 +680,7 @@ clean:
 obj/analysis_avedangles_seg.o: src/analysis_avedangles_seg.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: `analysis_avedangles_seg'
-#  Last modified 2022-05-04 11:20:42
+#  Last modified 2022-05-04 14:52:46
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -573,11 +690,37 @@ obj/analysis_avedangles_seg.o: src/analysis_avedangles_seg.cpp
 	$(CXX) $(CXX_OPT) -c $< -o $@
 	
 
+# Not a target:
+src/main.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-04 11:10:50
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+src/output.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-04 11:10:47
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
+src/error.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-04 11:10:50
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
 obj/analysis_msd.o: src/analysis_msd.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: `analysis_msd'
- 
-#  Last modified 2022-05-04 11:20:45
+#  Last modified 2022-05-04 14:53:57
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -617,7 +760,7 @@ src/analysis_pointers.cpp:
 obj/analysis_msd_region.o: src/analysis_msd_region.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: `analysis_msd_region'
-#  Last modified 2022-05-04 11:20:46
+#  Last modified 2022-05-04 14:53:57
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
@@ -630,31 +773,24 @@ obj/analysis_msd_region.o: src/analysis_msd_region.cpp
 obj/analysis_shell.o: src/analysis_shell.cpp
 #  Implicit rule search has been done.
 #  Implicit/static pattern stem: `analysis_shell'
-#  File does not exist.
+#  Last modified 2022-05-04 14:54:01
 #  File has been updated.
-#  Needs to be updated (-q is set).
-# automatic
-# @ := obj/analysis_shell.o
-# automatic
-# % := 
-# automatic
-# * := analysis_shell
-# automatic
-# + := src/analysis_shell.cpp
-# automatic
-# | := 
-# automatic
-# < := src/analysis_shell.cpp
-# automatic
-# ^ := src/analysis_shell.cpp
-# automatic
-# ? := src/analysis_shell.cpp
+#  Successfully updated.
 # variable set hash-table stats:
-# Load=8/32=25%, Rehash=0, Collisions=1/15=7%
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 #  commands to execute (from `Makefile', line 31):
 	@$(MKDIR)
 	$(CXX) $(CXX_OPT) -c $< -o $@
 	
+
+# Not a target:
+src/group.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-04 11:10:48
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 # Not a target:
 src/analysis_mindangles_seg.cpp:
@@ -675,6 +811,15 @@ src/analysis_packing.cpp:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
 # Not a target:
+src/input.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-04 11:10:48
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+# Not a target:
 src/analysis_mindangles_seg_dislocated.cpp:
 #  Implicit rule search has been done.
 #  Last modified 2022-05-04 11:10:50
@@ -683,11 +828,18 @@ src/analysis_mindangles_seg_dislocated.cpp:
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
-# Not a target:
-obj/dcd_r.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+obj/dcd_r.o: src/dcd_r.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: `dcd_r'
+#  Last modified 2022-05-04 14:54:04
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+#  commands to execute (from `Makefile', line 31):
+	@$(MKDIR)
+	$(CXX) $(CXX_OPT) -c $< -o $@
+	
 
 # Not a target:
 src/analysis_rdf.cpp:
@@ -698,8 +850,17 @@ src/analysis_rdf.cpp:
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
+# Not a target:
+src/analysis_straight_chain.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-05-04 11:10:48
+#  File has been updated.
+#  Successfully updated.
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
 # files hash-table stats:
-# Load=50/1024=5%, Rehash=0, Collisions=6/144=4%
+# Load=60/1024=6%, Rehash=0, Collisions=6/185=3%
 # VPATH Search Paths
 
 # No `vpath' search paths.
@@ -709,8 +870,9 @@ src/analysis_rdf.cpp:
 # # of strings in strcache: 1
 # # of strcache buffers: 1
 # strcache size: total = 4096 / max = 4096 / min = 4096 / avg = 4096
+ 
 # strcache free: total = 4087 / max = 4087 / min = 4087 / avg = 4087
 
-# Finished Make data base on Wed May  4 11:22:03 2022
+# Finished Make data base on Wed May  4 22:35:15 2022
 
  
