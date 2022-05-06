@@ -28,6 +28,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <string.h>
 
 #include <math.h>
 #include "analysis_functionalize.hpp"
@@ -53,6 +54,10 @@ ANALYSIS_FUNCTIONALIZE::ANALYSIS_FUNCTIONALIZE(PSF *system, GROUP *sel1, GROUP *
     fill(this->rdf_count.begin(), this->rdf_count.end(),0.0);
     this->iframe = 0;
     this->system->crosslinking_flag.resize(system->NATOM,0);
+    //char fileSpec[filename.length()+1];
+    //snprintf(fileSpec, sizeof(fileSpec),"%s",filename.c_str());
+    ofstream *file_temp = new ofstream(filename);
+    this->file_temp = file_temp;
 }
 
 void ANALYSIS_FUNCTIONALIZE::init() {
@@ -69,11 +74,11 @@ vector<vector<vector<int>>> ANALYSIS_FUNCTIONALIZE::head_cell(vector<vector<int>
             if (ixcell < 0) ixcell = 0;
             else if (ixcell > xcount-1) ixcell = xcount - 1;
 
-            iycell = int ((system->y[ind] + system->pbc[1]*0.5)/cellsize);
+            iycell = int ((system->y[ind] + system->pbc[2]*0.5)/cellsize);
             if (iycell < 0) iycell = 0;
             else if (iycell > ycount-1) iycell = ycount - 1;
 
-            izcell = int ((system->z[ind] + system->pbc[2]*0.5)/cellsize);
+            izcell = int ((system->z[ind] + system->pbc[5]*0.5)/cellsize);
             if (izcell < 0) izcell = 0;
             else if (izcell > zcount-1) izcell = zcount - 1;
 
@@ -119,13 +124,17 @@ void ANALYSIS_FUNCTIONALIZE::compute_void() {
 
     if (sel1->NATOM == 0) error1.error_exit("ERROR: sel1 doesn't contain any atoms!");
     if (sel2->NATOM == 0) error1.error_exit("ERROR: sel2 doesn't contain any atoms!");
+
+
+
+    if (system->pbc[0] < 0.01 or system->pbc[2] < 0.01 or system->pbc[5] < 0.01 ) error1.error_exit("ERROR: Box size not specified!");
     //cout << "sel1->NATOM: " << sel1->NATOM << endl; //for debug purpose
     //cout << "sel2->NATOM: " << sel2->NATOM << endl; //for debug purpose
 //    cout << "M_PI" << M_PI << endl;// for debug purpose
 
     xcount = int(system->pbc[0]/cellsize);
-    ycount = int(system->pbc[1]/cellsize);
-    zcount = int(system->pbc[2]/cellsize);
+    ycount = int(system->pbc[2]/cellsize);
+    zcount = int(system->pbc[5]/cellsize);
 
     linkedlist.resize(system->NATOM);
 
@@ -156,17 +165,20 @@ void ANALYSIS_FUNCTIONALIZE::compute_void() {
                                 int ind2 = head2[i2][j2][k2];
                                 while (1) {
                                     if (ind2 < 0) break;
-                                    r1[0] = system->x[ind2];
-	                                r1[1] = system->y[ind2];
-	                                r1[2] = system->z[ind2];
+                                    if (!(system->segid[ind1] == system->segid[ind2] && system->resid[ind1] == system->resid[ind2])) {
 
-                                    disp = getDistPoints(r, r1);
-                                    dist2 = disp[0]*disp[0] + disp[1]*disp[1] + disp[2]*disp[2];
-                                    dist = sqrt(dist2);
+                                        r1[0] = system->x[ind2];
+	                                    r1[1] = system->y[ind2];
+	                                    r1[2] = system->z[ind2];
+
+                                        disp = getDistPoints(r, r1);
+                                        dist2 = disp[0]*disp[0] + disp[1]*disp[1] + disp[2]*disp[2];
+                                        dist = sqrt(dist2);
                                     
-                                    distances.push_back(dist);
-                                    candidate_pairs.push_back({ind1,ind2});
+                                        distances.push_back(dist);
+                                        candidate_pairs.push_back({ind1,ind2});
 
+                                    }
                                     ind2 = linkedlist[ind2];
                                 }
                             }
@@ -178,9 +190,33 @@ void ANALYSIS_FUNCTIONALIZE::compute_void() {
         }
     }
 
+    //vector<float> vector_test = distances;
+
     vector<int> a_ind = heapSort(distances,distances.size());
-    
- 
+
+
+
+
+    for (int i = 0; i < a_ind.size(); i++ ) {
+        int i_sorted = a_ind[i];
+        float local_dist = distances[i];
+        int ind1 = candidate_pairs[i_sorted][0];
+        int ind2 = candidate_pairs[i_sorted][1];
+        int segid1 = system->segid[ind1];        
+        int segid2 = system->segid[ind2]; 
+        int resid1 = system->resid[ind1];       
+        int resid2 = system->resid[ind2];       
+
+        if (local_dist < dist_crit && system->crosslinking_flag[ind1] == 0 && system->crosslinking_flag[ind2] == 0) {
+            system->crosslinking_flag[ind1] = 1;
+            system->crosslinking_flag[ind2] = 1;
+            *this->file_temp << "patch " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << endl;
+        }
+    }
+
+    cout << "N_pairs: " << a_ind.size() << endl; 
+
+
 
 }
 
@@ -191,5 +227,7 @@ ANALYSIS_FUNCTIONALIZE::~ANALYSIS_FUNCTIONALIZE()
     sel1 = NULL;
     sel2 = NULL;
     this->rdf_count.clear();
+//    fclose(this->outfile_box);
+    this->file_temp->close();
 }
 

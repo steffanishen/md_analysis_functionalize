@@ -46,6 +46,7 @@ public:
  //   int whichN;
     //
     vector<int> linkedlist;
+    ofstream *file_temp; 
 
     ANALYSIS_FUNCTIONALIZE(PSF *system, GROUP *sel1, GROUP *sel2, int vector1d, int vector2d, int voidf, string filename, float dist_crit, float dr); //constructor
     

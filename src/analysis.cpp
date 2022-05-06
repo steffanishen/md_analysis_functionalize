@@ -627,7 +627,7 @@ vector<vector<float>> ANALYSIS::compute_2D_vector() {
     return placeholder;
 }
 
-void ANALYSIS::heapify(vector<float> arr, vector<int> a_ind, int n, int i) {
+void ANALYSIS::heapify(vector<float>& arr, vector<int>& a_ind, int n, int i) {
         // Find largest among root, left child and right child
         int largest = i;
         int left = 2 * i + 1;
@@ -655,10 +655,11 @@ void ANALYSIS::heapify(vector<float> arr, vector<int> a_ind, int n, int i) {
     }
 
 
-vector<int> ANALYSIS::heapSort(vector<float> arr, int n)
+vector<int> ANALYSIS::heapSort(vector<float>& arr, int n)
 {
     // Build heap (rearrange array)
-    int placeholder;
+    float placeholder;
+    int placeholder_int;
 
     vector<int> a_ind;
     a_ind.resize(n);
@@ -674,6 +675,11 @@ vector<int> ANALYSIS::heapSort(vector<float> arr, int n)
         placeholder = arr[0];
         arr[0] = arr[i];
         arr[i] = placeholder;
+
+        placeholder_int = a_ind[0];
+        a_ind[0] = a_ind[i];
+        a_ind[i] = placeholder_int;
+        
   
         // call max heapify on the reduced heap
         heapify(arr, a_ind, i, 0);

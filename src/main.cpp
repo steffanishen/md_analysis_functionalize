@@ -109,6 +109,7 @@ int main(int argc, char* argv[])
  	psels.push_back(&sels[i]);
     }
     
+    //begin debugging: output the selection
     for (unsigned i = 0; i < sels.size(); i++) {
         for (auto &segment:psels[i]->segments_ind) {
 	    for (int ind : segment) {
@@ -116,6 +117,7 @@ int main(int argc, char* argv[])
             }
         }
     }
+    //end debugging
 
 //    sel1 = sys.select_atoms("resname IMP and atomtype NE");
 
