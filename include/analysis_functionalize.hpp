@@ -54,6 +54,7 @@ public:
 
     vector<vector<vector<int>>> head_cell(vector<vector<int>> segments_ind);
     int neighbor_cell_ind(int i, int i_incr, int n);
+    string patchtype(string name1, string resname1, string name2, string resname2  );
 
     void compute_void();
      

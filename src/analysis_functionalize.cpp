@@ -97,6 +97,25 @@ int ANALYSIS_FUNCTIONALIZE::neighbor_cell_ind(int i, int i_incr, int n) {
     return i_adj;
 }
 
+
+string ANALYSIS_FUNCTIONALIZE::patchtype(string name1, string resname1, string name2, string resname2) {
+    string patchtype;
+    if (name1 == "C2" && resname1 == "STYR" && name2 == "C2" && resname2 == "STYR" ) patchtype = "PST1";
+    else if (name1 == "C2" && resname1 == "STYR" && name2 == "C1" && resname2 == "STYR" ) patchtype = "PST2";
+    else if (name1 == "C1" && resname1 == "STYR" && name2 == "C2" && resname2 == "STYR" ) patchtype = "PST3";
+    else if (name1 == "C1" && resname1 == "STYR" && name2 == "C1" && resname2 == "STYR" ) patchtype = "PST4";
+    else if (name1 == "C2" && resname1 == "DVB" && name2 == "C1" && resname2 == "STYR" ) patchtype = "PST2";
+    else if (name1 == "C2" && resname1 == "STYR" && name2 == "C1" && resname2 == "DVB" ) patchtype = "PST2";
+    else if (name1 == "C1" && resname1 == "DVB" && name2 == "C2" && resname2 == "STYR" ) patchtype = "PST3";
+    else if (name1 == "C1" && resname1 == "STYR" && name2 == "C2" && resname2 == "DVB" ) patchtype = "PST3";
+    else if (name1 == "C3" && resname1 == "DVB" && name2 == "C2" && resname2 == "STYR" ) patchtype = "PSTVB7";
+    else if (name1 == "C2" && resname1 == "STYR" && name2 == "C3" && resname2 == "DVB" ) patchtype = "PSTVB8";
+    else if (name1 == "C4" && resname1 == "DVB" && name2 == "C1" && resname2 == "STYR" ) patchtype = "PSTVB3";
+    else if (name1 == "C1" && resname1 == "STYR" && name2 == "C4" && resname2 == "DVB" ) patchtype = "PSTVB4";
+    else error1.error_exit("Cannot find the patch type!!"); 
+    return patchtype;
+}
+
 void ANALYSIS_FUNCTIONALIZE::compute_void() {
     sel1->anglezs.clear();
     vector<float> r(3,0.0);
@@ -210,7 +229,8 @@ void ANALYSIS_FUNCTIONALIZE::compute_void() {
         if (local_dist < dist_crit && system->crosslinking_flag[ind1] == 0 && system->crosslinking_flag[ind2] == 0) {
             system->crosslinking_flag[ind1] = 1;
             system->crosslinking_flag[ind2] = 1;
-            *this->file_temp << "patch " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << endl;
+            string patchtype = this->patchtype(system->atomname[ind1],system->resname[ind1],system->atomname[ind2],system->resname[ind2]);
+            *this->file_temp << "patch " << patchtype << " " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << endl;
         }
     }
 
