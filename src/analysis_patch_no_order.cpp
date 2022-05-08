@@ -38,11 +38,14 @@
 
 using namespace std;
 
-ANALYSIS_PATCH_NO_ORDER::ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP *sel2, int vector1d, int vector2d, int voidf, string filename, float dist_crit, float dr)
+ANALYSIS_PATCH_NO_ORDER::ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP *sel2, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string filename, float dist_crit, float dr)
 {
     this->system = system;
-    this->sel1 = sel1;
-    this->sel2 = sel2;
+    this->sels = sels;
+
+//    this->sel1 = sel1;
+//    this->sel2 = sel2;
+
     this->vector1d = vector1d;
     this->vector2d = vector2d;
     this->voidf = voidf;
@@ -112,12 +115,62 @@ string ANALYSIS_PATCH_NO_ORDER::patchtype(string name1, string resname1, string 
     else if (name1 == "C2" && resname1 == "STYR" && name2 == "C3" && resname2 == "DVB" ) patchtype = "PSTVB8";
     else if (name1 == "C4" && resname1 == "DVB" && name2 == "C1" && resname2 == "STYR" ) patchtype = "PSTVB3";
     else if (name1 == "C1" && resname1 == "STYR" && name2 == "C4" && resname2 == "DVB" ) patchtype = "PSTVB4";
+    else if (name1 == "CG" && resname1 == "STYR" && name2 == "C1" && resname2 == "NC4" ) patchtype = "ORTHO31";
+    else if (name1 == "CE1"                      && name2 == "C1" && resname2 == "NC4" ) patchtype = "ORTHO11";
+    else if (name1 == "CD1"                      && name2 == "C1" && resname2 == "NC4" ) patchtype = "ORTHO21";
+    else if (name1 == "CD2"                      && name2 == "C1" && resname2 == "NC4" ) patchtype = "ORTHO41";
+    else if (name1 == "CE2"                      && name2 == "C1" && resname2 == "NC4" ) patchtype = "ORTHO51";
+    else if (name1 == "CG" && resname1 == "STYR" && name2 == "C2" && resname2 == "NC4" ) patchtype = "ORTHO32";
+    else if (name1 == "CE1"                      && name2 == "C2" && resname2 == "NC4" ) patchtype = "ORTHO12";
+    else if (name1 == "CD1"                      && name2 == "C2" && resname2 == "NC4" ) patchtype = "ORTHO22";
+    else if (name1 == "CD2"                      && name2 == "C2" && resname2 == "NC4" ) patchtype = "ORTHO42";
+    else if (name1 == "CE2"                      && name2 == "C2" && resname2 == "NC4" ) patchtype = "ORTHO52";
+    else if (name1 == "CG" && resname1 == "STYR" && name2 == "C3" && resname2 == "NC4" ) patchtype = "ORTHO33";
+    else if (name1 == "CE1"                      && name2 == "C3" && resname2 == "NC4" ) patchtype = "ORTHO13";
+    else if (name1 == "CD1"                      && name2 == "C3" && resname2 == "NC4" ) patchtype = "ORTHO23";
+    else if (name1 == "CD2"                      && name2 == "C3" && resname2 == "NC4" ) patchtype = "ORTHO43";
+    else if (name1 == "CE2"                      && name2 == "C3" && resname2 == "NC4" ) patchtype = "ORTHO53";
+    else if (name1 == "CG" && resname1 == "STYR" && name2 == "C4" && resname2 == "NC4" ) patchtype = "ORTHO34";
+    else if (name1 == "CE1"                      && name2 == "C4" && resname2 == "NC4" ) patchtype = "ORTHO14";
+    else if (name1 == "CD1"                      && name2 == "C4" && resname2 == "NC4" ) patchtype = "ORTHO24";
+    else if (name1 == "CD2"                      && name2 == "C4" && resname2 == "NC4" ) patchtype = "ORTHO44";
+    else if (name1 == "CE2"                      && name2 == "C4" && resname2 == "NC4" ) patchtype = "ORTHO54";
     else error1.error_exit("Cannot find the patch type!!"); 
     return patchtype;
 }
 
+void ANALYSIS_PATCH_NO_ORDER::flagallinres(int segid, int resid) {
+    segid -= 1;
+    resid -= 1;
+    int natoms = system->segments[segid][resid].size();
+    for (int i = 0; i < natoms; i++) {
+        int flag_index = system->segments[segid][resid][i];
+        system->crosslinking_flag[flag_index] = 1;
+    }
+}
+
+void ANALYSIS_PATCH_NO_ORDER::flagallinresifcrosslinked(int segid, int resid) {
+    segid -= 1;
+    resid -= 1;
+    int natoms = system->segments[segid][resid].size();
+    int flag_temp = 0;
+    for (int i = 0; i < natoms; i++) {
+        int flag_index = system->segments[segid][resid][i];
+        if (system->atomname[flag_index] == "C1" && system->charge[flag_index] > -0.15) flag_temp = 1;
+        else if (system->atomname[flag_index] == "C2" && system->charge[flag_index] > -0.15) flag_temp = 1;
+        else if (system->atomname[flag_index] == "C3" && system->charge[flag_index] > -0.15) flag_temp = 1;
+        else if (system->atomname[flag_index] == "C4" && system->charge[flag_index] > -0.15) flag_temp = 1;
+    }
+
+    if (flag_temp == 1) {
+        for (int i = 0; i < natoms; i++) {
+            int flag_index = system->segments[segid][resid][i];
+            system->crosslinking_flag[flag_index] = 1;
+        }
+    }
+}
+
 void ANALYSIS_PATCH_NO_ORDER::compute_void() {
-    sel1->anglezs.clear();
     vector<float> r(3,0.0);
     vector<float> r1(3,0.0);
     vector<float> disp(3,0.0);
@@ -135,14 +188,23 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
     float dr = this->dr;
     int nbins = int(this->dist_crit/dr);
     this->iframe += 1;
+    vector<vector<vector<vector<int>>>> heads;
 
     //cout <<"dist_crit: " << this->dist_crit<< "  dr: " << dr << " rdf bin: " << nbins << endl;
     //cout << "rdf nbins: " << nbins << endl;
 
     vector<float> rdf(nbins,0.0);
+    int nsels = sels.size();
+    if ( (nsels % 2) != 0) error1.error_exit("ERROR: Odd number of groups. Please select pairs of groups for patches!!");
+    int npairs = nsels/2;
 
-    if (sel1->NATOM == 0) error1.error_exit("ERROR: sel1 doesn't contain any atoms!");
-    if (sel2->NATOM == 0) error1.error_exit("ERROR: sel2 doesn't contain any atoms!");
+    for (int i = 0; i < nsels; i++) {
+        if (sels[i]->NATOM == 0) error1.error_exit("ERROR: sels doesn't contain any atoms!");
+        //cout << "segments_ind size: " << sels[i]->segments_ind.size()<< endl;
+    }
+    
+    //if (sel1->NATOM == 0) error1.error_exit("ERROR: sel1 doesn't contain any atoms!");
+    //if (sel2->NATOM == 0) error1.error_exit("ERROR: sel2 doesn't contain any atoms!");
 
 
 
@@ -157,53 +219,62 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
 
     linkedlist.resize(system->NATOM);
 
-    vector<vector<vector<int>>> head1 = head_cell(sel1->segments_ind);
-    vector<vector<vector<int>>> head2 = head_cell(sel2->segments_ind);
+//    vector<vector<vector<int>>> head1 = head_cell(sel1->segments_ind);
+//    vector<vector<vector<int>>> head2 = head_cell(sel2->segments_ind);
 
-    int xcount = head1.size();
-    int ycount = head1[0].size();
-    int zcount = head1[0][0].size();
+    for (int i = 0; i < nsels; i++) {
+        vector<vector<vector<int>>> headtemp = head_cell(sels[i]->segments_ind);
+        heads.push_back(headtemp);
+    }
+
+    int xcount = heads[0].size();
+    int ycount = heads[0][0].size();
+    int zcount = heads[0][0][0].size();
 
 
 // Find the distance between possible croslinking pairs
-    for (int i = 0; i < xcount; i++) {
-        for (int j = 0; j < ycount; j++) {
-            for (int k = 0; k < zcount; k++) {
-                int ind1 = head1[i][j][k];
-                while (1) {
-                    if (ind1 < 0) break;
-                    r[0] = system->x[ind1];
-	                r[1] = system->y[ind1];
-	                r[2] = system->z[ind1];
-                    for (int iprime = -1; iprime <=1; iprime++) {
-                        int i2 = neighbor_cell_ind(i,iprime,xcount);
-                        for (int jprime = -1; jprime <=1; jprime++) {
-                            int j2 = neighbor_cell_ind(j,jprime,ycount);
-                            for (int kprime = -1; kprime <=1; kprime++) {
-                                int k2 = neighbor_cell_ind(k,kprime,zcount);
-                                int ind2 = head2[i2][j2][k2];
-                                while (1) {
-                                    if (ind2 < 0) break;
-                                    if (!(system->segid[ind1] == system->segid[ind2] && system->resid[ind1] == system->resid[ind2])) {
+    for (int iselpair = 0; iselpair < nsels/2; iselpair++) {
+        int isel1 = iselpair*2;
+        int isel2 = isel1 + 1;
+        for (int i = 0; i < xcount; i++) {
+            for (int j = 0; j < ycount; j++) {
+                for (int k = 0; k < zcount; k++) {
+                    int ind1 = heads[isel1][i][j][k];
+                    while (1) {
+                        if (ind1 < 0) break;
+                        r[0] = system->x[ind1];
+	                    r[1] = system->y[ind1];
+	                    r[2] = system->z[ind1];
+                        for (int iprime = -1; iprime <=1; iprime++) {
+                            int i2 = neighbor_cell_ind(i,iprime,xcount);
+                            for (int jprime = -1; jprime <=1; jprime++) {
+                                int j2 = neighbor_cell_ind(j,jprime,ycount);
+                                for (int kprime = -1; kprime <=1; kprime++) {
+                                    int k2 = neighbor_cell_ind(k,kprime,zcount);
+                                    int ind2 = heads[isel2][i2][j2][k2];
+                                    while (1) {
+                                        if (ind2 < 0) break;
+                                        if (!(system->segid[ind1] == system->segid[ind2] && system->resid[ind1] == system->resid[ind2])) {
 
-                                        r1[0] = system->x[ind2];
-	                                    r1[1] = system->y[ind2];
-	                                    r1[2] = system->z[ind2];
+                                            r1[0] = system->x[ind2];
+    	                                    r1[1] = system->y[ind2];
+    	                                    r1[2] = system->z[ind2];
 
-                                        disp = getDistPoints(r, r1);
-                                        dist2 = disp[0]*disp[0] + disp[1]*disp[1] + disp[2]*disp[2];
-                                        dist = sqrt(dist2);
+                                            disp = getDistPoints(r, r1);
+                                            dist2 = disp[0]*disp[0] + disp[1]*disp[1] + disp[2]*disp[2];
+                                            dist = sqrt(dist2);
                                     
-                                        distances.push_back(dist);
-                                        candidate_pairs.push_back({ind1,ind2});
+                                            distances.push_back(dist);
+                                            candidate_pairs.push_back({ind1,ind2});
 
+                                        }
+                                        ind2 = linkedlist[ind2];
                                     }
-                                    ind2 = linkedlist[ind2];
                                 }
                             }
                         }
+                        ind1 = linkedlist[ind1];
                     }
-                    ind1 = linkedlist[ind1];
                 }
             }
         }
@@ -226,11 +297,38 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
         int resid1 = system->resid[ind1];       
         int resid2 = system->resid[ind2];       
 
+        int segid_temp;
+        int resid_temp;
+
         if (local_dist < dist_crit && system->crosslinking_flag[ind1] == 0 && system->crosslinking_flag[ind2] == 0) {
-            system->crosslinking_flag[ind1] = 1;
-            system->crosslinking_flag[ind2] = 1;
-            string patchtype = this->patchtype(system->atomname[ind1],system->resname[ind1],system->atomname[ind2],system->resname[ind2]);
-            *this->file_temp << "patch " << patchtype << " " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << endl;
+            if (system->resname[ind1] == "NC4") {
+                segid_temp = system->segid[ind1];
+                resid_temp = system->resid[ind1];
+                flagallinresifcrosslinked(segid_temp, resid_temp);
+            }
+            if (system->resname[ind2] == "NC4") {
+                segid_temp = system->segid[ind2];
+                resid_temp = system->resid[ind2];
+                flagallinresifcrosslinked(segid_temp, resid_temp);
+            }
+
+            if (system->crosslinking_flag[ind1] == 0 && system->crosslinking_flag[ind2] == 0) {
+                string patchtype = this->patchtype(system->atomname[ind1],system->resname[ind1],system->atomname[ind2],system->resname[ind2]);
+                *this->file_temp << "patch " << patchtype << " " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << endl;
+                system->crosslinking_flag[ind1] = 1;
+                system->crosslinking_flag[ind2] = 1;
+            }
+
+            if (system->resname[ind1] == "NC4") {
+                segid_temp = system->segid[ind1] ;
+                resid_temp = system->resid[ind1] ;
+                flagallinres(segid_temp, resid_temp);
+            }
+            if (system->resname[ind2] == "NC4") {
+                segid_temp = system->segid[ind2] ;
+                resid_temp = system->resid[ind2] ;
+                flagallinres(segid_temp, resid_temp);
+            }
         }
     }
 
@@ -244,8 +342,8 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
 ANALYSIS_PATCH_NO_ORDER::~ANALYSIS_PATCH_NO_ORDER()
 {
     system = NULL;
-    sel1 = NULL;
-    sel2 = NULL;
+    //sel1 = NULL;
+    //sel2 = NULL;
     this->rdf_count.clear();
 //    fclose(this->outfile_box);
     this->file_temp->close();

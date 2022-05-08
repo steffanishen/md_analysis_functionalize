@@ -264,7 +264,7 @@ vector<ANALYSIS*> ANALYSIS_POINTERS::init() {
 		}
         	analysis.push_back(new ANALYSIS_MSD(system,sels[groupid],vector1d,vector2d,voidf,filename,dtmax));
 
-        } if (analysis_opt[0] == "functionalize") {
+        } else if (analysis_opt[0] == "functionalize") {
                 int groupid;
                 int groupid1;
                 int whichN;
@@ -290,7 +290,7 @@ vector<ANALYSIS*> ANALYSIS_POINTERS::init() {
                     }
                 }
                 analysis.push_back(new ANALYSIS_FUNCTIONALIZE(system,sels[groupid],sels[groupid1],vector1d,vector2d,voidf,filename,dist_crit,dr));
-        } if (analysis_opt[0] == "patch_no_order") {
+        } else if (analysis_opt[0] == "patch_no_order") {
                 int groupid;
                 int groupid1;
                 int whichN;
@@ -315,7 +315,7 @@ vector<ANALYSIS*> ANALYSIS_POINTERS::init() {
                         dr = stof(analysis_opt[argid+1]);
                     }
                 }
-                analysis.push_back(new ANALYSIS_PATCH_NO_ORDER(system,sels[groupid],sels[groupid1],vector1d,vector2d,voidf,filename,dist_crit,dr));
+                analysis.push_back(new ANALYSIS_PATCH_NO_ORDER(system,sels[groupid],sels[groupid1],sels,vector1d,vector2d,voidf,filename,dist_crit,dr));
         } else if (analysis_opt[0] == "msd_region") {
 		int groupid;
 	 	int whichN;
@@ -512,7 +512,7 @@ vector<ANALYSIS*> ANALYSIS_POINTERS::init() {
                 }
         	analysis.push_back(new ANALYSIS_ROTATE(system,sels[groupid],vector1d,vector2d,voidf,bl,name1,name2,name3,name4,name_ref1,name_ref2,filename,nbinsangle,axisid));
         } else {
-	   error1.error_exit("Wrong analysis option, please check the input script!") ;
+   error1.error_exit("Wrong analysis option, please check the input script!") ;
         }
     }
     return analysis;

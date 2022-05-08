@@ -47,14 +47,17 @@ public:
     //
     vector<int> linkedlist;
     ofstream *file_temp; 
+    vector<GROUP*> sels;
 
-    ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP *sel2, int vector1d, int vector2d, int voidf, string filename, float dist_crit, float dr); //constructor
+    ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP *sel2, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string filename, float dist_crit, float dr); //constructor
     
     void init();
 
     vector<vector<vector<int>>> head_cell(vector<vector<int>> segments_ind);
     int neighbor_cell_ind(int i, int i_incr, int n);
     string patchtype(string name1, string resname1, string name2, string resname2  );
+    void flagallinres(int segid, int resid);
+    void flagallinresifcrosslinked(int segid, int resid);
 
     void compute_void();
      
