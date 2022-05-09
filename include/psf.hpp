@@ -90,6 +90,7 @@ public:
     float *z;
 
     vector<int> crosslinking_flag;
+    vector<int> functionalizing_flag;
 
     vector<float*> XS;
     vector<float*> YS;

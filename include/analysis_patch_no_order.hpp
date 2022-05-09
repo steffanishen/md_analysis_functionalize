@@ -26,6 +26,7 @@
 #include "atom.hpp"
 #include "group.hpp"
 #include "analysis.hpp"
+#include "cluster.hpp"
 #ifndef ANALYSIS_PATCH_NO_ORDER_HPP
 #define	ANALYSIS_PATCH_NO_ORDER_HPP
 
@@ -45,11 +46,18 @@ public:
 //    GROUP *sel1;
  //   int whichN;
     //
+    int nclusters = 0;
+    int nresidues = 0;
     vector<int> linkedlist;
     ofstream *file_temp; 
     vector<GROUP*> sels;
+    vector<CLUSTER*> clusters;
+    vector<vector<int>> residue_cluster_ind;
 
-    ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP *sel2, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string filename, float dist_crit, float dr); //constructor
+    ifstream *input_cluster;
+    ofstream *output_cluster;
+
+    ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP *sel2, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string input_cluster_name, string output_cluster_name, string filename, float dist_crit, float dr); //constructor
     
     void init();
 
@@ -58,6 +66,13 @@ public:
     string patchtype(string name1, string resname1, string name2, string resname2  );
     void flagallinres(int segid, int resid);
     void flagallinresifcrosslinked(int segid, int resid);
+    void flagfunctionalization(int segid, int resid);
+    void read_cluster_file();
+    bool is_empty(std::ifstream *pFile);
+    void initialize_clusters();
+    void find_initial_clusters();
+    void organize_clusters(int cluster_id, int cluster_main_id);
+    void reduce_clusters();
 
     void compute_void();
      

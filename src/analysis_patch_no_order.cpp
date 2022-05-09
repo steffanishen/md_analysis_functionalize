@@ -29,6 +29,7 @@
 #include <iostream>
 #include <sstream>
 #include <string.h>
+#include <algorithm>
 
 #include <math.h>
 #include "analysis_patch_no_order.hpp"
@@ -38,7 +39,7 @@
 
 using namespace std;
 
-ANALYSIS_PATCH_NO_ORDER::ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP *sel2, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string filename, float dist_crit, float dr)
+ANALYSIS_PATCH_NO_ORDER::ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP *sel2, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string input_cluster_name, string output_cluster_name, string filename, float dist_crit, float dr)
 {
     this->system = system;
     this->sels = sels;
@@ -57,10 +58,52 @@ ANALYSIS_PATCH_NO_ORDER::ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP
     fill(this->rdf_count.begin(), this->rdf_count.end(),0.0);
     this->iframe = 0;
     this->system->crosslinking_flag.resize(system->NATOM,0);
+    this->system->functionalizing_flag.resize(system->NATOM,0);
     //char fileSpec[filename.length()+1];
     //snprintf(fileSpec, sizeof(fileSpec),"%s",filename.c_str());
-    ofstream *file_temp = new ofstream(filename);
-    this->file_temp = file_temp;
+    this->file_temp = new ofstream(filename);
+   // fstream *input_cluster = new fstream(input_cluster_name);
+
+    input_cluster = new ifstream(input_cluster_name);
+/*
+    try
+   {
+      input_cluster.open(input_cluster_name.c_str());
+      if (input_cluster.fail()) throw input_cluster_name;  // the exception being checked
+      /*
+      while (input_cluster.good())  // check next character
+      {
+         cout << descrip << ' ' << price << endl;
+         inFile >> descrip >> price;
+      }
+      inFile.close();
+      return 0;
+   }
+   catch(string e)
+   {
+      cout << e << " was not successfully opened.\n Please check that the file currently exists." << endl;
+      exit(1);
+   }
+*/
+
+/*
+    input_cluster->exceptions(std::ifstream::failbit);
+    try
+    {
+        input_cluster->open(input_cluster_name,ios::in);
+    }
+    catch(ifstream::failure e)
+    {
+        cerr << "Exception opening/reading file '" << input_cluster_name << "' : " << std::endl;
+        cerr << "Please check the path of the file and if it exists." << endl;
+    }
+
+*/
+    
+    output_cluster = new ofstream(output_cluster_name);
+   // clusters.resize(system->segments.size(), vector<CLUSTER*>(system->segments[0].size(), new CLUSTER(-1)));
+    residue_cluster_ind.resize(system->segments.size(), vector<int>(system->segments[0].size() ));
+
 }
 
 void ANALYSIS_PATCH_NO_ORDER::init() {
@@ -170,6 +213,124 @@ void ANALYSIS_PATCH_NO_ORDER::flagallinresifcrosslinked(int segid, int resid) {
     }
 }
 
+void ANALYSIS_PATCH_NO_ORDER::flagfunctionalization(int segid, int resid) {
+    segid -= 1;
+    resid -= 1;
+    int natoms = system->segments[segid][resid].size();
+    int flag_temp = 0;
+    for (int i = 0; i < natoms; i++) {
+        int flag_index = system->segments[segid][resid][i];
+        if ((system->atomname[flag_index] == "CD1" || system->atomname[flag_index] == "CD2" || system->atomname[flag_index] == "CE1" || system->atomname[flag_index] == "CE2") && system->charge[flag_index] > -0.05) flag_temp = 1;
+        else if (system->atomname[flag_index] == "CG" && system->resname[flag_index] == "STYR" && system->charge[flag_index] > -0.05 ) flag_temp = 1;
+    }
+
+    if (flag_temp == 1) {
+        for (int i = 0; i < natoms; i++) {
+            int flag_index = system->segments[segid][resid][i];
+            system->functionalizing_flag[flag_index] = 1;
+        }
+    }
+}
+
+bool ANALYSIS_PATCH_NO_ORDER::is_empty(std::ifstream *pFile)
+{
+    return pFile->peek() == std::ifstream::traits_type::eof();
+}
+
+
+void ANALYSIS_PATCH_NO_ORDER::initialize_clusters() {
+    int icluster = 0;
+    nresidues = 0;
+    for (int i = 0; i < system->segments.size(); i++) {
+        for (int i1 = 0; i1 < system->segments[i].size(); i1++) {
+            residue_cluster_ind[i][i1] = icluster;
+            CLUSTER *cluster_temp = new CLUSTER(icluster);
+            cluster_temp->residue_members.push_back({i,i1});
+            clusters.push_back(cluster_temp);
+            icluster++;
+            nresidues++;
+        }
+    }
+    nclusters = icluster;
+
+}
+
+void ANALYSIS_PATCH_NO_ORDER::organize_clusters(int cluster_id, int cluster_main_id) {
+    if (clusters[cluster_id]->kid_clusters.size() > 0) {
+        clusters[cluster_main_id]->residue_members.insert(clusters[cluster_main_id]->residue_members.end(),clusters[cluster_id]->residue_members.begin(),clusters[cluster_id]->residue_members.end());
+        for (int i = 0; i < clusters[cluster_id]->kid_clusters.size(); i++) {
+            organize_clusters(clusters[cluster_id]->kid_clusters[i]->cluster_ind, cluster_main_id);
+        }
+    }
+}
+
+void ANALYSIS_PATCH_NO_ORDER::reduce_clusters() {
+    int icluster = 0;
+    int segid_temp;
+    int resid_temp;
+    for (int i = 0; i < clusters.size(); i++) {
+        if (clusters[i]->parent_cluster_ind == -1) {
+            clusters[i]->cluster_ind = icluster;
+            for (int i1 = 0; i1 < clusters[i]->residue_members.size(); i1++) {
+                segid_temp = clusters[i]->residue_members[i1][0];
+                resid_temp = clusters[i]->residue_members[i1][1];
+                residue_cluster_ind[segid_temp][resid_temp] = icluster;
+            }
+            clusters[i]->kid_clusters.clear();
+            icluster++;
+        }
+    }
+
+    auto it = clusters.begin();
+    while (it != clusters.end()) {
+        if ( (*it)->parent_cluster_ind != -1) {
+//            cout << "parent_cluster_ind: " << (*it)->parent_cluster_ind << endl;
+            it = clusters.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    nclusters = clusters.size();
+
+}
+
+
+
+void ANALYSIS_PATCH_NO_ORDER::find_initial_clusters() {
+    for (int i = 0; i < system->NBONDS; i++) {
+        int iatom = system->ibond[i][0];
+            int jatom = system->ibond[i][1];
+            int segid_temp0 = system->segid[iatom];
+            int resid_temp0 = system->resid[iatom];
+            int segid_temp1 = system->segid[jatom];
+            int resid_temp1 = system->resid[jatom];
+            int cluster1;
+            int cluster2;
+            if (segid_temp0 != segid_temp1 || resid_temp0 != resid_temp1) {
+                cluster1 = residue_cluster_ind[segid_temp0][resid_temp0];
+                cluster2 = residue_cluster_ind[segid_temp1][resid_temp1]; 
+                if (cluster1 < cluster2) {
+                    clusters[cluster2]->parent_cluster_ind = cluster1;
+                    clusters[cluster1]->kid_clusters.push_back(clusters[cluster2]);
+                } else {
+                    clusters[cluster1]->parent_cluster_ind = cluster2;
+                    clusters[cluster2]->kid_clusters.push_back(clusters[cluster1]);
+                }
+            }
+    }
+
+    for (int i = 0; i < clusters.size(); i++) {
+        int cluster_ind_main;
+        if (clusters[i]->parent_cluster_ind == -1) {
+            cluster_ind_main = clusters[i]->cluster_ind;
+            organize_clusters(i,cluster_ind_main);
+        }
+    }
+    reduce_clusters();
+}
+
+
+
 void ANALYSIS_PATCH_NO_ORDER::compute_void() {
     vector<float> r(3,0.0);
     vector<float> r1(3,0.0);
@@ -208,7 +369,7 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
 
 
 
-    if (system->pbc[0] < 0.01 or system->pbc[2] < 0.01 or system->pbc[5] < 0.01 ) error1.error_exit("ERROR: Box size not specified!");
+    if (system->pbc[0] < 0.01 || system->pbc[2] < 0.01 || system->pbc[5] < 0.01 ) error1.error_exit("ERROR: Box size not specified!");
     //cout << "sel1->NATOM: " << sel1->NATOM << endl; //for debug purpose
     //cout << "sel2->NATOM: " << sel2->NATOM << endl; //for debug purpose
 //    cout << "M_PI" << M_PI << endl;// for debug purpose
@@ -231,6 +392,24 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
     int ycount = heads[0][0].size();
     int zcount = heads[0][0][0].size();
 
+// Consider if residues are NC4 functionalized or not
+    for (int i = 0; i < system->segments.size(); i++) {
+        for (int i1 = 0; i1 < system->segments[i].size(); i1++) {
+            int ind1 = system->segments[i][i1][0];
+            int segid_temp0 = system->segid[ind1];
+            int resid_temp0 = system->resid[ind1];
+            if (system->resname[ind1] == "NC4") flagallinresifcrosslinked(segid_temp0, resid_temp0);
+            if (system->resname[ind1] == "STYR" || system->resname[ind1] == "DVB"  ) flagfunctionalization(segid_temp0,resid_temp0);
+        }
+    }
+
+// Initialize the residue clusters
+    initialize_clusters();
+
+// Merge the initial clusters
+    find_initial_clusters(); 
+
+    cout << "nresidues: " << nresidues << "; nclusters: " << nclusters << endl;
 
 // Find the distance between possible croslinking pairs
     for (int iselpair = 0; iselpair < nsels/2; iselpair++) {
@@ -299,25 +478,38 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
 
         int segid_temp;
         int resid_temp;
+        
+        int functionalizing = 0;
+        int functionalized = 0;
 
         if (local_dist < dist_crit && system->crosslinking_flag[ind1] == 0 && system->crosslinking_flag[ind2] == 0) {
-            if (system->resname[ind1] == "NC4") {
+        /*    if (system->resname[ind1] == "NC4") {
+                functionalizing = 1;
                 segid_temp = system->segid[ind1];
                 resid_temp = system->resid[ind1];
                 flagallinresifcrosslinked(segid_temp, resid_temp);
             }
             if (system->resname[ind2] == "NC4") {
+                functionalizing = 1;
                 segid_temp = system->segid[ind2];
                 resid_temp = system->resid[ind2];
                 flagallinresifcrosslinked(segid_temp, resid_temp);
             }
+        */
 
-            if (system->crosslinking_flag[ind1] == 0 && system->crosslinking_flag[ind2] == 0) {
-                string patchtype = this->patchtype(system->atomname[ind1],system->resname[ind1],system->atomname[ind2],system->resname[ind2]);
-                *this->file_temp << "patch " << patchtype << " " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << endl;
-                system->crosslinking_flag[ind1] = 1;
-                system->crosslinking_flag[ind2] = 1;
+            if (system->resname[ind1] == "NC4" || system->resname[ind2] == "NC4") {
+                functionalizing = 1;
+                if (system->functionalizing_flag[ind1] == 1 || system->functionalizing_flag[ind2] == 1) functionalized = 1;
             }
+
+            //if (system->crosslinking_flag[ind1] == 0 && system->crosslinking_flag[ind2] == 0) {
+                if (! (functionalizing == 1 && functionalized == 1) ) {
+                    string patchtype = this->patchtype(system->atomname[ind1],system->resname[ind1],system->atomname[ind2],system->resname[ind2]);
+                    *this->file_temp << "patch " << patchtype << " " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << endl;
+                    system->crosslinking_flag[ind1] = 1;
+                    system->crosslinking_flag[ind2] = 1;
+                }
+            //}
 
             if (system->resname[ind1] == "NC4") {
                 segid_temp = system->segid[ind1] ;
