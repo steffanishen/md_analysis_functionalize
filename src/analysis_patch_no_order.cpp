@@ -104,6 +104,20 @@ ANALYSIS_PATCH_NO_ORDER::ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP
    // clusters.resize(system->segments.size(), vector<CLUSTER*>(system->segments[0].size(), new CLUSTER(-1)));
     residue_cluster_ind.resize(system->segments.size(), vector<int>(system->segments[0].size() ));
 
+    system->segid_ind.clear();
+    system->resid_ind.clear();
+
+    for (int i = 0; i < system->segments.size(); i++) {
+        for (int i1 = 0; i1 < system->segments[i].size(); i1++) {
+            for (int i2 = 0; i2 < system->segments[i][i1].size(); i2++) {
+                int atom_id_temp = system->segments[i][i1][i2];
+                system->segid_ind.push_back(i);
+                system->resid_ind.push_back(i1);
+            }
+        }
+    }
+
+
 }
 
 void ANALYSIS_PATCH_NO_ORDER::init() {
@@ -182,23 +196,19 @@ string ANALYSIS_PATCH_NO_ORDER::patchtype(string name1, string resname1, string 
     return patchtype;
 }
 
-void ANALYSIS_PATCH_NO_ORDER::flagallinres(int segid, int resid) {
-    segid -= 1;
-    resid -= 1;
-    int natoms = system->segments[segid][resid].size();
+void ANALYSIS_PATCH_NO_ORDER::flagallinres(int segid_ind, int resid_ind) {
+    int natoms = system->segments[segid_ind][resid_ind].size();
     for (int i = 0; i < natoms; i++) {
-        int flag_index = system->segments[segid][resid][i];
+        int flag_index = system->segments[segid_ind][resid_ind][i];
         system->crosslinking_flag[flag_index] = 1;
     }
 }
 
-void ANALYSIS_PATCH_NO_ORDER::flagallinresifcrosslinked(int segid, int resid) {
-    segid -= 1;
-    resid -= 1;
-    int natoms = system->segments[segid][resid].size();
+void ANALYSIS_PATCH_NO_ORDER::flagallinresifcrosslinked(int segid_ind, int resid_ind) {
+    int natoms = system->segments[segid_ind][resid_ind].size();
     int flag_temp = 0;
     for (int i = 0; i < natoms; i++) {
-        int flag_index = system->segments[segid][resid][i];
+        int flag_index = system->segments[segid_ind][resid_ind][i];
         if (system->atomname[flag_index] == "C1" && system->charge[flag_index] > -0.15) flag_temp = 1;
         else if (system->atomname[flag_index] == "C2" && system->charge[flag_index] > -0.15) flag_temp = 1;
         else if (system->atomname[flag_index] == "C3" && system->charge[flag_index] > -0.15) flag_temp = 1;
@@ -207,35 +217,44 @@ void ANALYSIS_PATCH_NO_ORDER::flagallinresifcrosslinked(int segid, int resid) {
 
     if (flag_temp == 1) {
         for (int i = 0; i < natoms; i++) {
-            int flag_index = system->segments[segid][resid][i];
+            int flag_index = system->segments[segid_ind][resid_ind][i];
             system->crosslinking_flag[flag_index] = 1;
         }
     }
 }
 
-void ANALYSIS_PATCH_NO_ORDER::flagfunctionalization(int segid, int resid) {
-    segid -= 1;
-    resid -= 1;
-    int natoms = system->segments[segid][resid].size();
+void ANALYSIS_PATCH_NO_ORDER::flagfunctionalizationiffunctionalized(int segid_ind, int resid_ind) {
+    int natoms = system->segments[segid_ind][resid_ind].size();
     int flag_temp = 0;
     for (int i = 0; i < natoms; i++) {
-        int flag_index = system->segments[segid][resid][i];
+        int flag_index = system->segments[segid_ind][resid_ind][i];
         if ((system->atomname[flag_index] == "CD1" || system->atomname[flag_index] == "CD2" || system->atomname[flag_index] == "CE1" || system->atomname[flag_index] == "CE2") && system->charge[flag_index] > -0.05) flag_temp = 1;
         else if (system->atomname[flag_index] == "CG" && system->resname[flag_index] == "STYR" && system->charge[flag_index] > -0.05 ) flag_temp = 1;
     }
 
     if (flag_temp == 1) {
         for (int i = 0; i < natoms; i++) {
-            int flag_index = system->segments[segid][resid][i];
+            int flag_index = system->segments[segid_ind][resid_ind][i];
             system->functionalizing_flag[flag_index] = 1;
         }
     }
 }
 
+void ANALYSIS_PATCH_NO_ORDER::flagfunctionalization(int segid_ind, int resid_ind) {
+    int natoms = system->segments[segid_ind][resid_ind].size();
+
+    for (int i = 0; i < natoms; i++) {
+        int flag_index = system->segments[segid_ind][resid_ind][i];
+        system->functionalizing_flag[flag_index] = 1;
+    }
+}
+
+
 bool ANALYSIS_PATCH_NO_ORDER::is_empty(std::ifstream *pFile)
 {
     return pFile->peek() == std::ifstream::traits_type::eof();
 }
+
 
 
 void ANALYSIS_PATCH_NO_ORDER::initialize_clusters() {
@@ -247,6 +266,8 @@ void ANALYSIS_PATCH_NO_ORDER::initialize_clusters() {
             CLUSTER *cluster_temp = new CLUSTER(icluster);
             cluster_temp->residue_members.push_back({i,i1});
             clusters.push_back(cluster_temp);
+
+
             icluster++;
             nresidues++;
         }
@@ -294,31 +315,81 @@ void ANALYSIS_PATCH_NO_ORDER::reduce_clusters() {
 
 }
 
+void ANALYSIS_PATCH_NO_ORDER::reduce_clusters_corr() {
+    int icluster = 0;
+    int segid_temp;
+    int resid_temp;
+    for (int i = 0; i < clusters.size(); i++) {
+        if (clusters[i]->cluster_ind != -1) {
+            clusters[i]->cluster_ind = icluster;
+            for (int i1 = 0; i1 < clusters[i]->residue_members.size(); i1++) {
+                segid_temp = clusters[i]->residue_members[i1][0];
+                resid_temp = clusters[i]->residue_members[i1][1];
+                residue_cluster_ind[segid_temp][resid_temp] = icluster;
+            }
+            icluster++;
+        }
+    }
+
+    auto it = clusters.begin();
+    while (it != clusters.end()) {
+        if ( (*it)->cluster_ind == -1) {
+//            cout << "parent_cluster_ind: " << (*it)->parent_cluster_ind << endl;
+            it = clusters.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    nclusters = clusters.size();
+
+}
+
+
+void ANALYSIS_PATCH_NO_ORDER::merge_clusters(int cluster1, int cluster2) {
+    int minid = min(cluster1,cluster2);
+    int maxid = max(cluster1,cluster2);
+    //clusters[minid]->residue_members.insert(clusters[minid]->residue_members.end(),clusters[maxid]->residue_members.begin(),clusters[maxid]->residue_members.end());
+    for (int i = 0; i < clusters[maxid]->residue_members.size(); i++) {
+        int segid_temp = clusters[maxid]->residue_members[i][0];
+        int resid_temp = clusters[maxid]->residue_members[i][1];
+        residue_cluster_ind[segid_temp][resid_temp] = minid;
+        clusters[minid]->residue_members.push_back({segid_temp,resid_temp});
+    
+    clusters[maxid]->residue_members.clear();
+    clusters[maxid]->cluster_ind = -1;
+    }
+}
 
 
 void ANALYSIS_PATCH_NO_ORDER::find_initial_clusters() {
     for (int i = 0; i < system->NBONDS; i++) {
         int iatom = system->ibond[i][0];
             int jatom = system->ibond[i][1];
-            int segid_temp0 = system->segid[iatom];
-            int resid_temp0 = system->resid[iatom];
-            int segid_temp1 = system->segid[jatom];
-            int resid_temp1 = system->resid[jatom];
+            int segid_temp0 = system->segid_ind[iatom];
+            int resid_temp0 = system->resid_ind[iatom];
+            int segid_temp1 = system->segid_ind[jatom];
+            int resid_temp1 = system->resid_ind[jatom];
             int cluster1;
             int cluster2;
             if (segid_temp0 != segid_temp1 || resid_temp0 != resid_temp1) {
                 cluster1 = residue_cluster_ind[segid_temp0][resid_temp0];
                 cluster2 = residue_cluster_ind[segid_temp1][resid_temp1]; 
+                if (cluster1 != cluster2) {
+                    merge_clusters(cluster1,cluster2);
+                }
+                /*
                 if (cluster1 < cluster2) {
                     clusters[cluster2]->parent_cluster_ind = cluster1;
                     clusters[cluster1]->kid_clusters.push_back(clusters[cluster2]);
-                } else {
+                } else if (cluster1 > cluster2) {
                     clusters[cluster1]->parent_cluster_ind = cluster2;
                     clusters[cluster2]->kid_clusters.push_back(clusters[cluster1]);
                 }
+                */
             }
     }
 
+/*
     for (int i = 0; i < clusters.size(); i++) {
         int cluster_ind_main;
         if (clusters[i]->parent_cluster_ind == -1) {
@@ -326,7 +397,9 @@ void ANALYSIS_PATCH_NO_ORDER::find_initial_clusters() {
             organize_clusters(i,cluster_ind_main);
         }
     }
-    reduce_clusters();
+ */
+    reduce_clusters_corr();
+
 }
 
 
@@ -396,10 +469,8 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
     for (int i = 0; i < system->segments.size(); i++) {
         for (int i1 = 0; i1 < system->segments[i].size(); i1++) {
             int ind1 = system->segments[i][i1][0];
-            int segid_temp0 = system->segid[ind1];
-            int resid_temp0 = system->resid[ind1];
-            if (system->resname[ind1] == "NC4") flagallinresifcrosslinked(segid_temp0, resid_temp0);
-            if (system->resname[ind1] == "STYR" || system->resname[ind1] == "DVB"  ) flagfunctionalization(segid_temp0,resid_temp0);
+            if (system->resname[ind1] == "NC4") flagallinresifcrosslinked(i, i1);
+            if (system->resname[ind1] == "STYR" || system->resname[ind1] == "DVB"  ) flagfunctionalizationiffunctionalized(i,i1);
         }
     }
 
@@ -408,6 +479,7 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
 
 // Merge the initial clusters
     find_initial_clusters(); 
+
 
     cout << "nresidues: " << nresidues << "; nclusters: " << nclusters << endl;
 
@@ -476,11 +548,20 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
         int resid1 = system->resid[ind1];       
         int resid2 = system->resid[ind2];       
 
+
+        int segid1_ind = system->segid_ind[ind1];        
+        int segid2_ind = system->segid_ind[ind2]; 
+        int resid1_ind = system->resid_ind[ind1];       
+        int resid2_ind = system->resid_ind[ind2];       
+
         int segid_temp;
         int resid_temp;
         
         int functionalizing = 0;
         int functionalized = 0;
+
+        int cluster1;
+        int cluster2;
 
         if (local_dist < dist_crit && system->crosslinking_flag[ind1] == 0 && system->crosslinking_flag[ind2] == 0) {
         /*    if (system->resname[ind1] == "NC4") {
@@ -502,25 +583,30 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
                 if (system->functionalizing_flag[ind1] == 1 || system->functionalizing_flag[ind2] == 1) functionalized = 1;
             }
 
-            //if (system->crosslinking_flag[ind1] == 0 && system->crosslinking_flag[ind2] == 0) {
+            //if not (functionalizing and functionzlized) 
                 if (! (functionalizing == 1 && functionalized == 1) ) {
-                    string patchtype = this->patchtype(system->atomname[ind1],system->resname[ind1],system->atomname[ind2],system->resname[ind2]);
-                    *this->file_temp << "patch " << patchtype << " " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << endl;
-                    system->crosslinking_flag[ind1] = 1;
-                    system->crosslinking_flag[ind2] = 1;
+            // if the two residues are not in the same cluster
+                    cluster1 = residue_cluster_ind[segid1_ind][resid1_ind];
+                    cluster2 = residue_cluster_ind[segid2_ind][resid2_ind]; 
+                    if (cluster1 != cluster2) {
+                        cout << "merge cluster1: " << cluster1 << " and cluster2: " << cluster2 << endl;
+                        merge_clusters(cluster1,cluster2);
+                        string patchtype = this->patchtype(system->atomname[ind1],system->resname[ind1],system->atomname[ind2],system->resname[ind2]);
+                        *this->file_temp << "patch " << patchtype << " " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << endl;
+                        system->crosslinking_flag[ind1] = 1;
+                        system->crosslinking_flag[ind2] = 1;
+
+                        if (system->resname[ind1] == "NC4") {
+                            flagallinres(segid1_ind, resid1_ind);
+                            flagfunctionalization(segid2_ind, resid2_ind);
+                        } else if (system->resname[ind2] == "NC4") {
+                            flagallinres(segid2_ind, resid2_ind);
+                            flagfunctionalization(segid1_ind, resid1_ind);
+                        }
+                    }
                 }
             //}
 
-            if (system->resname[ind1] == "NC4") {
-                segid_temp = system->segid[ind1] ;
-                resid_temp = system->resid[ind1] ;
-                flagallinres(segid_temp, resid_temp);
-            }
-            if (system->resname[ind2] == "NC4") {
-                segid_temp = system->segid[ind2] ;
-                resid_temp = system->resid[ind2] ;
-                flagallinres(segid_temp, resid_temp);
-            }
         }
     }
 

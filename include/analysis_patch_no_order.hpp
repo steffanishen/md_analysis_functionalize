@@ -66,6 +66,7 @@ public:
     string patchtype(string name1, string resname1, string name2, string resname2  );
     void flagallinres(int segid, int resid);
     void flagallinresifcrosslinked(int segid, int resid);
+    void flagfunctionalizationiffunctionalized(int segid, int resid);
     void flagfunctionalization(int segid, int resid);
     void read_cluster_file();
     bool is_empty(std::ifstream *pFile);
@@ -73,6 +74,8 @@ public:
     void find_initial_clusters();
     void organize_clusters(int cluster_id, int cluster_main_id);
     void reduce_clusters();
+    void reduce_clusters_corr();
+    void merge_clusters(int cluster1, int cluster2);
 
     void compute_void();
      
