@@ -432,11 +432,30 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
     if ( (nsels % 2) != 0) error1.error_exit("ERROR: Odd number of groups. Please select pairs of groups for patches!!");
     int npairs = nsels/2;
 
-    for (int i = 0; i < nsels; i++) {
-        if (sels[i]->NATOM == 0) error1.error_exit("ERROR: sels doesn't contain any atoms!");
+    vector<int> empty_group;
+    for (int iselpair = 0; iselpair < nsels/2; iselpair++) {
+        int empty_group_temp = 1;
+        int isel1 = iselpair*2;
+        int isel2 = isel1 + 1;
+        if (sels[isel1]->NATOM == 0) {
+            empty_group_temp = 0;
+            cout << "Select group " << isel1 << " is empty!!" << endl;
+        }
+        if (sels[isel2]->NATOM == 0) {
+            empty_group_temp = 0;
+            cout << "Select group " << isel2 << " is empty!!" << endl;
+        }
+        empty_group.push_back(empty_group_temp);
+
         //cout << "segments_ind size: " << sels[i]->segments_ind.size()<< endl;
     }
     
+    int product_empty_group = 0;
+    for (int i = 0; i < nsels/2; i++) {
+        product_empty_group += empty_group[i];
+    }
+
+    if (product_empty_group == 0) error1.error_exit("ERROR: sels don't contain any atoms!");
     //if (sel1->NATOM == 0) error1.error_exit("ERROR: sel1 doesn't contain any atoms!");
     //if (sel2->NATOM == 0) error1.error_exit("ERROR: sel2 doesn't contain any atoms!");
 
@@ -451,7 +470,7 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
     ycount = int(system->pbc[2]/cellsize);
     zcount = int(system->pbc[5]/cellsize);
 
-    linkedlist.resize(system->NATOM);
+    linkedlist.resize(system->NATOM,-1);
 
 //    vector<vector<vector<int>>> head1 = head_cell(sel1->segments_ind);
 //    vector<vector<vector<int>>> head2 = head_cell(sel2->segments_ind);
