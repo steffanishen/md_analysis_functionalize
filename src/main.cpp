@@ -112,8 +112,8 @@ int main(int argc, char* argv[])
     //begin debugging: output the selection
     for (unsigned i = 0; i < sels.size(); i++) {
         for (auto &segment:psels[i]->segments_ind) {
-	    for (int ind : segment) {
-                cout << "Atomname: " << sys.atomname[ind] << "; Resname: " << sys.resname[ind] << "; Charge: " << sys.charge[ind] << endl; 
+	        for (int ind : segment) {
+     //           cout << "Atomname: " << sys.atomname[ind] << "; Resname: " << sys.resname[ind] << "; Charge: " << sys.charge[ind] << endl; 
             }
         }
     }

@@ -76,6 +76,7 @@ public:
     void reduce_clusters();
     void reduce_clusters_corr();
     void merge_clusters(int cluster1, int cluster2);
+    void select_atoms(GROUP *atoms_select);
 
     void compute_void();
      

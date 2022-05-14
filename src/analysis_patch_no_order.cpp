@@ -403,6 +403,101 @@ void ANALYSIS_PATCH_NO_ORDER::find_initial_clusters() {
 }
 
 
+void ANALYSIS_PATCH_NO_ORDER:: select_atoms(GROUP *atoms_select) {
+//    vector<int> flagarray(NATOM,0);
+    int NATOM; // Number of atoms
+    vector<ATOM> atoms;
+
+    string temp;
+    vector<string> arg1;
+    int segid_run = -1;
+    int resid_run = -1;
+    vector<int> residues_item;
+    vector<vector<int>> segments_item;  
+
+    for (auto &atom : atoms_select->atoms) {
+        int atom_index = atom.atom_index;
+        int flag = 0;
+        for (auto &ibonded: system->ibond_atom[atom_index]) {
+            if (! (system->segid[ibonded] == system->segid[atom_index] && system->resid[ibonded] == system->resid[atom_index])) flag = 1;
+        }
+        if (flag == 0) atoms.push_back(atom);
+    }
+
+    atoms_select->atoms.clear();
+    copy(atoms.begin(),atoms.end(),back_inserter(atoms_select->atoms));
+
+    atoms_select->residues.clear();
+    atoms_select->segments.clear();
+    atoms_select->segments_ind.clear();
+    atoms_select->atomids.clear();
+
+    atoms_select->NATOM = atoms_select->atoms.size();
+
+    for (size_t i = 0; i < atoms_select->NATOM; i++ ) {
+        ATOM atom = atoms_select->atoms[i];
+	if (i == 0) {
+            residues_item.push_back(atom.atom_index);
+	        resid_run = system->resid[atom.atom_index];
+	        segid_run = system->segid[atom.atom_index];
+            if (i == atoms_select->NATOM-1) {
+	            atoms_select->residues.push_back(residues_item);
+	            segments_item.push_back(residues_item);
+	            atoms_select->segments.push_back(segments_item);                
+            }
+        } else if (i == size_t(atoms_select->NATOM -1)) {
+  	    if (system->resid[atom.atom_index] != resid_run || system->segid[atom.atom_index] != segid_run) {
+	        atoms_select->residues.push_back(residues_item);
+	        segments_item.push_back(residues_item);
+	        resid_run = system->resid[atom.atom_index];
+		residues_item.clear();
+	    }
+	    if (system->segid[atom.atom_index] != segid_run) {
+	        atoms_select->segments.push_back(segments_item);
+		segid_run = system->segid[atom.atom_index];
+		segments_item.clear();
+	    }
+	    residues_item.push_back(atom.atom_index);
+	    atoms_select->residues.push_back(residues_item);
+	    segments_item.push_back(residues_item);
+	    atoms_select->segments.push_back(segments_item);
+	    residues_item.clear();
+	    segments_item.clear();
+        } else {
+  	    if (system->resid[atom.atom_index] != resid_run || system->segid[atom.atom_index] != segid_run) {
+	        atoms_select->residues.push_back(residues_item);
+	        segments_item.push_back(residues_item);
+	        resid_run = system->resid[atom.atom_index];
+		residues_item.clear();
+	    }
+	    if (system->segid[atom.atom_index] != segid_run) {
+	        atoms_select->segments.push_back(segments_item);
+		segid_run = system->segid[atom.atom_index];
+		segments_item.clear();
+	    }
+            residues_item.push_back(atom.atom_index);
+        }
+//        cout << "debug: we monitor atom " << atom.atom_index <<" the size of segments_item " <<  segments_item.size() << endl; 
+    }
+
+    for (auto &segment : atoms_select->segments) {
+	vector<int> segment_temp;
+	for (auto &residue : segment) {
+	    for (auto &atomid : residue) {
+	        segment_temp.push_back(atomid);
+	        atoms_select->atomids.push_back(atomid); //MSe comment: group vector with collapsed atomid
+	    }
+	}
+	atoms_select->segments_ind.push_back(segment_temp);
+    }
+
+
+}
+
+
+
+
+
 
 void ANALYSIS_PATCH_NO_ORDER::compute_void() {
     vector<float> r(3,0.0);
@@ -427,10 +522,25 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
     //cout <<"dist_crit: " << this->dist_crit<< "  dr: " << dr << " rdf bin: " << nbins << endl;
     //cout << "rdf nbins: " << nbins << endl;
 
+    
+
     vector<float> rdf(nbins,0.0);
     int nsels = sels.size();
     if ( (nsels % 2) != 0) error1.error_exit("ERROR: Odd number of groups. Please select pairs of groups for patches!!");
     int npairs = nsels/2;
+
+    for (auto &crosslinking_sel: sels) {
+        select_atoms(crosslinking_sel);
+    }
+
+
+    for (unsigned i = 0; i < sels.size(); i++) {
+        for (auto &segment:sels[i]->segments_ind) {
+	        for (int ind : segment) {
+                cout << "Atomname: " << system->atomname[ind] << "; Resname: " << system->resname[ind] << "; Charge: " << system->charge[ind] << endl; 
+            }
+        }
+    }
 
     vector<int> empty_group;
     for (int iselpair = 0; iselpair < nsels/2; iselpair++) {
