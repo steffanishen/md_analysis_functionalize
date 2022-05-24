@@ -57,7 +57,7 @@ public:
     ifstream *input_cluster;
     ofstream *output_cluster;
 
-    ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP *sel2, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string input_cluster_name, string output_cluster_name, string filename, float dist_crit, float dr); //constructor
+    ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP *sel2, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string input_cluster_name, string output_cluster_name, string filename, float dist_crit, float dr,float cellsizex, float cellsizey, float cellsizez); //constructor
     
     void init();
 

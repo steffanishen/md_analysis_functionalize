@@ -39,7 +39,7 @@
 
 using namespace std;
 
-ANALYSIS_PATCH_NO_ORDER::ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP *sel2, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string input_cluster_name, string output_cluster_name, string filename, float dist_crit, float dr)
+ANALYSIS_PATCH_NO_ORDER::ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP *sel2, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string input_cluster_name, string output_cluster_name, string filename, float dist_crit, float dr, float cellsizex, float cellsizey, float cellsizez)
 {
     this->system = system;
     this->sels = sels;
@@ -59,6 +59,9 @@ ANALYSIS_PATCH_NO_ORDER::ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP
     this->iframe = 0;
     this->system->crosslinking_flag.resize(system->NATOM,0);
     this->system->functionalizing_flag.resize(system->NATOM,0);
+    this->cellsizex = cellsizex;
+    this->cellsizey = cellsizey;
+    this->cellsizez = cellsizez;
     //char fileSpec[filename.length()+1];
     //snprintf(fileSpec, sizeof(fileSpec),"%s",filename.c_str());
     this->file_temp = new ofstream(filename);
