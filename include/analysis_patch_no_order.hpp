@@ -49,7 +49,8 @@ public:
     int nclusters = 0;
     int nresidues = 0;
     vector<int> linkedlist;
-    ofstream *file_temp; 
+    ofstream *file_temp;
+    ofstream *seg_res_ids; 
     vector<GROUP*> sels;
     vector<CLUSTER*> clusters;
     vector<vector<int>> residue_cluster_ind;
@@ -65,7 +66,7 @@ public:
     int neighbor_cell_ind(int i, int i_incr, int n);
     string patchtype(string name1, string resname1, string name2, string resname2  );
     void flagallinres(int segid, int resid);
-    void flagallinresifcrosslinked(int segid, int resid);
+    void flagallinresiffunctionalized(int segid, int resid);
     void flagfunctionalizationiffunctionalized(int segid, int resid);
     void flagfunctionalization(int segid, int resid);
     void read_cluster_file();

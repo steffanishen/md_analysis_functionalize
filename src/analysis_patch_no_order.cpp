@@ -65,6 +65,7 @@ ANALYSIS_PATCH_NO_ORDER::ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP
     //char fileSpec[filename.length()+1];
     //snprintf(fileSpec, sizeof(fileSpec),"%s",filename.c_str());
     this->file_temp = new ofstream(filename);
+    this->seg_res_ids = new ofstream("seg_res_ids.dat");
    // fstream *input_cluster = new fstream(input_cluster_name);
 
     input_cluster = new ifstream(input_cluster_name);
@@ -207,7 +208,7 @@ void ANALYSIS_PATCH_NO_ORDER::flagallinres(int segid_ind, int resid_ind) {
     }
 }
 
-void ANALYSIS_PATCH_NO_ORDER::flagallinresifcrosslinked(int segid_ind, int resid_ind) {
+void ANALYSIS_PATCH_NO_ORDER::flagallinresiffunctionalized(int segid_ind, int resid_ind) {
     int natoms = system->segments[segid_ind][resid_ind].size();
     int flag_temp = 0;
     for (int i = 0; i < natoms; i++) {
@@ -221,7 +222,7 @@ void ANALYSIS_PATCH_NO_ORDER::flagallinresifcrosslinked(int segid_ind, int resid
     if (flag_temp == 1) {
         for (int i = 0; i < natoms; i++) {
             int flag_index = system->segments[segid_ind][resid_ind][i];
-            system->crosslinking_flag[flag_index] = 1;
+            system->functionalizing_flag[flag_index] = 1;
         }
     }
 }
@@ -231,14 +232,16 @@ void ANALYSIS_PATCH_NO_ORDER::flagfunctionalizationiffunctionalized(int segid_in
     int flag_temp = 0;
     for (int i = 0; i < natoms; i++) {
         int flag_index = system->segments[segid_ind][resid_ind][i];
-        if ((system->atomname[flag_index] == "CD1" || system->atomname[flag_index] == "CD2" || system->atomname[flag_index] == "CE1" || system->atomname[flag_index] == "CE2") && system->charge[flag_index] > -0.05) flag_temp = 1;
+        if ((system->atomname[flag_index] == "CD1" || system->atomname[flag_index] == "CD2" || system->atomname[flag_index] == "CE1" || system->atomname[flag_index] == "CE2") && (system->resname[flag_index] == "STYR" || system->resname[flag_index] == "DVB") && system->charge[flag_index] > -0.05) flag_temp = 1;
         else if (system->atomname[flag_index] == "CG" && system->resname[flag_index] == "STYR" && system->charge[flag_index] > -0.05 ) flag_temp = 1;
     }
 
     if (flag_temp == 1) {
         for (int i = 0; i < natoms; i++) {
             int flag_index = system->segments[segid_ind][resid_ind][i];
-            system->functionalizing_flag[flag_index] = 1;
+            if (((system->atomname[flag_index] == "CD1" || system->atomname[flag_index] == "CD2" || system->atomname[flag_index] == "CE1" || system->atomname[flag_index] == "CE2") && (system->resname[flag_index] == "STYR" || system->resname[flag_index] == "DVB")) || (system->atomname[flag_index] == "CG" && system->resname[flag_index] == "STYR") ) {
+                system->functionalizing_flag[flag_index] = 1;
+            }
         }
     }
 }
@@ -357,10 +360,10 @@ void ANALYSIS_PATCH_NO_ORDER::merge_clusters(int cluster1, int cluster2) {
         int resid_temp = clusters[maxid]->residue_members[i][1];
         residue_cluster_ind[segid_temp][resid_temp] = minid;
         clusters[minid]->residue_members.push_back({segid_temp,resid_temp});
+    }
     
     clusters[maxid]->residue_members.clear();
     clusters[maxid]->cluster_ind = -1;
-    }
 }
 
 
@@ -424,7 +427,7 @@ void ANALYSIS_PATCH_NO_ORDER:: select_atoms(GROUP *atoms_select) {
         for (auto &ibonded: system->ibond_atom[atom_index]) {
             if (! (system->segid[ibonded] == system->segid[atom_index] && system->resid[ibonded] == system->resid[atom_index])) flag = 1;
         }
-        if (flag == 0) atoms.push_back(atom);
+        if (flag == 0 && system->functionalizing_flag[atom_index] == 0) atoms.push_back(atom);
     }
 
     atoms_select->atoms.clear();
@@ -532,56 +535,55 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
     if ( (nsels % 2) != 0) error1.error_exit("ERROR: Odd number of groups. Please select pairs of groups for patches!!");
     int npairs = nsels/2;
 
+// Consider if residues are NC4 functionalized or not
+    for (int i = 0; i < system->segments.size(); i++) {
+        for (int i1 = 0; i1 < system->segments[i].size(); i1++) {
+            int ind1 = system->segments[i][i1][0];
+            if (system->resname[ind1] == "NC4") flagallinresiffunctionalized(i, i1);
+            if (system->resname[ind1] == "STYR" || system->resname[ind1] == "DVB"  ) flagfunctionalizationiffunctionalized(i,i1);
+        }
+    }
+
+// Remove the crosslinked or functionalized atoms
     for (auto &crosslinking_sel: sels) {
         select_atoms(crosslinking_sel);
     }
 
 
-    for (unsigned i = 0; i < sels.size(); i++) {
-        for (auto &segment:sels[i]->segments_ind) {
-	        for (int ind : segment) {
-                cout << "Atomname: " << system->atomname[ind] << "; Resname: " << system->resname[ind] << "; Charge: " << system->charge[ind] << endl; 
-            }
-        }
-    }
 
-    vector<int> empty_group;
+    vector<int> is_not_empty_group;
     for (int iselpair = 0; iselpair < nsels/2; iselpair++) {
-        int empty_group_temp = 1;
+        int is_not_empty_group_temp = 1;
         int isel1 = iselpair*2;
         int isel2 = isel1 + 1;
         if (sels[isel1]->NATOM == 0) {
-            empty_group_temp = 0;
+            is_not_empty_group_temp = 0;
             cout << "Select group " << isel1 << " is empty!!" << endl;
         }
         if (sels[isel2]->NATOM == 0) {
-            empty_group_temp = 0;
+            is_not_empty_group_temp = 0;
             cout << "Select group " << isel2 << " is empty!!" << endl;
         }
-        empty_group.push_back(empty_group_temp);
+        is_not_empty_group.push_back(is_not_empty_group_temp);
 
         //cout << "segments_ind size: " << sels[i]->segments_ind.size()<< endl;
     }
     
-    int product_empty_group = 0;
+    int sum_is_not_empty_group = 0;
     for (int i = 0; i < nsels/2; i++) {
-        product_empty_group += empty_group[i];
+        sum_is_not_empty_group += is_not_empty_group[i];
     }
 
-    if (product_empty_group == 0) error1.error_exit("ERROR: sels don't contain any atoms!");
-    //if (sel1->NATOM == 0) error1.error_exit("ERROR: sel1 doesn't contain any atoms!");
-    //if (sel2->NATOM == 0) error1.error_exit("ERROR: sel2 doesn't contain any atoms!");
+    if (sum_is_not_empty_group == 0) error1.error_exit("ERROR: sels don't contain any atoms!");
 
 
 
     if (system->pbc[0] < 0.01 || system->pbc[2] < 0.01 || system->pbc[5] < 0.01 ) error1.error_exit("ERROR: Box size not specified!");
-    //cout << "sel1->NATOM: " << sel1->NATOM << endl; //for debug purpose
-    //cout << "sel2->NATOM: " << sel2->NATOM << endl; //for debug purpose
 //    cout << "M_PI" << M_PI << endl;// for debug purpose
 
-    xcount = int(system->pbc[0]/cellsize);
-    ycount = int(system->pbc[2]/cellsize);
-    zcount = int(system->pbc[5]/cellsize);
+    xcount = int(system->pbc[0]/cellsizex);
+    ycount = int(system->pbc[2]/cellsizey);
+    zcount = int(system->pbc[5]/cellsizez);
 
     linkedlist.resize(system->NATOM,-1);
 
@@ -597,14 +599,18 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
     int ycount = heads[0][0].size();
     int zcount = heads[0][0][0].size();
 
-// Consider if residues are NC4 functionalized or not
-    for (int i = 0; i < system->segments.size(); i++) {
-        for (int i1 = 0; i1 < system->segments[i].size(); i1++) {
-            int ind1 = system->segments[i][i1][0];
-            if (system->resname[ind1] == "NC4") flagallinresifcrosslinked(i, i1);
-            if (system->resname[ind1] == "STYR" || system->resname[ind1] == "DVB"  ) flagfunctionalizationiffunctionalized(i,i1);
+
+    for (unsigned i = 0; i < sels.size(); i++) {
+        for (auto &segment:sels[i]->segments_ind) {
+	        for (int ind : segment) {
+                if (system->functionalizing_flag[ind] != 1 && system->crosslinking_flag[ind] != 1) {
+                    cout << "Atomname: " << system->atomname[ind] << "; Resname: " << system->resname[ind] << "; Charge: " << system->charge[ind] << endl; 
+                }
+            }
         }
     }
+
+
 
 // Initialize the residue clusters
     initialize_clusters();
@@ -725,6 +731,7 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
                         merge_clusters(cluster1,cluster2);
                         string patchtype = this->patchtype(system->atomname[ind1],system->resname[ind1],system->atomname[ind2],system->resname[ind2]);
                         *this->file_temp << "patch " << patchtype << " " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << endl;
+                        *this->seg_res_ids << segid1 << " " << resid1 << " " << segid2 << " " << resid2 << endl;
                         system->crosslinking_flag[ind1] = 1;
                         system->crosslinking_flag[ind2] = 1;
 
@@ -756,6 +763,7 @@ ANALYSIS_PATCH_NO_ORDER::~ANALYSIS_PATCH_NO_ORDER()
     //sel2 = NULL;
     this->rdf_count.clear();
 //    fclose(this->outfile_box);
+    this->seg_res_ids->close();
     this->file_temp->close();
 }
 
