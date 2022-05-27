@@ -39,7 +39,7 @@
 
 using namespace std;
 
-ANALYSIS_PATCH_NO_ORDER::ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP *sel2, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string input_cluster_name, string output_cluster_name, string filename, float dist_crit, float dr, float cellsizex, float cellsizey, float cellsizez)
+ANALYSIS_PATCH_NO_ORDER::ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP *sel2, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string input_cluster_name, string output_cluster_name, string filename, float dist_crit, float dr, float cellsizex, float cellsizey, float cellsizez, int crosslink_in_cluster)
 {
     this->system = system;
     this->sels = sels;
@@ -67,6 +67,7 @@ ANALYSIS_PATCH_NO_ORDER::ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP
     this->file_temp = new ofstream(filename);
     this->seg_res_ids = new ofstream("seg_res_ids.dat");
    // fstream *input_cluster = new fstream(input_cluster_name);
+    this->crosslink_in_cluster = crosslink_in_cluster;
 
     input_cluster = new ifstream(input_cluster_name);
 /*
@@ -701,6 +702,7 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
         int cluster1;
         int cluster2;
 
+
         if (local_dist < dist_crit && system->crosslinking_flag[ind1] == 0 && system->crosslinking_flag[ind2] == 0) {
         /*    if (system->resname[ind1] == "NC4") {
                 functionalizing = 1;
@@ -729,6 +731,20 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
                     if (cluster1 != cluster2) {
                         cout << "merge cluster1: " << cluster1 << " and cluster2: " << cluster2 << endl;
                         merge_clusters(cluster1,cluster2);
+                        string patchtype = this->patchtype(system->atomname[ind1],system->resname[ind1],system->atomname[ind2],system->resname[ind2]);
+                        *this->file_temp << "patch " << patchtype << " " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << endl;
+                        *this->seg_res_ids << segid1 << " " << resid1 << " " << segid2 << " " << resid2 << endl;
+                        system->crosslinking_flag[ind1] = 1;
+                        system->crosslinking_flag[ind2] = 1;
+
+                        if (system->resname[ind1] == "NC4") {
+                            flagallinres(segid1_ind, resid1_ind);
+                            flagfunctionalization(segid2_ind, resid2_ind);
+                        } else if (system->resname[ind2] == "NC4") {
+                            flagallinres(segid2_ind, resid2_ind);
+                            flagfunctionalization(segid1_ind, resid1_ind);
+                        }
+                    } else if (crosslink_in_cluster == 1) {
                         string patchtype = this->patchtype(system->atomname[ind1],system->resname[ind1],system->atomname[ind2],system->resname[ind2]);
                         *this->file_temp << "patch " << patchtype << " " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << endl;
                         *this->seg_res_ids << segid1 << " " << resid1 << " " << segid2 << " " << resid2 << endl;

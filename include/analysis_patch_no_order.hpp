@@ -54,11 +54,12 @@ public:
     vector<GROUP*> sels;
     vector<CLUSTER*> clusters;
     vector<vector<int>> residue_cluster_ind;
+    int crosslink_in_cluster = 0;
 
     ifstream *input_cluster;
     ofstream *output_cluster;
 
-    ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP *sel2, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string input_cluster_name, string output_cluster_name, string filename, float dist_crit, float dr,float cellsizex, float cellsizey, float cellsizez); //constructor
+    ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP *sel2, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string input_cluster_name, string output_cluster_name, string filename, float dist_crit, float dr,float cellsizex, float cellsizey, float cellsizez, int crosslink_in_cluster); //constructor
     
     void init();
 
