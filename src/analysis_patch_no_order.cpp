@@ -605,7 +605,7 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
         for (auto &segment:sels[i]->segments_ind) {
 	        for (int ind : segment) {
                 if (system->functionalizing_flag[ind] != 1 && system->crosslinking_flag[ind] != 1) {
-                    cout << "Atomname: " << system->atomname[ind] << "; Resname: " << system->resname[ind] << "; Charge: " << system->charge[ind] << endl; 
+                    cout << "Atomname: " << system->atomname[ind] << "; Resname: " << system->resname[ind] << "; index: " << system->atom_index[ind] << " ; segid: " << system->segid[ind] << "; resid: " << system->resid[ind] << " ; Charge: " << system->charge[ind] << endl;
                 }
             }
         }
