@@ -18,35 +18,21 @@
 
 //***************** Partially contributed by Meng Shen since 06/10/2018 ***************************
 //***************** Email: steffanishen@gmail.com ***************************************
+//***************** use of this class must follow anglezs_rings **************************
 
 #include <iostream>
 #include <vector>
+#include "psf.hpp"
+#include "atom.hpp"
+#include "group.hpp"
 #include "analysis.hpp"
-#include "analysis_scale.hpp"
-#include "analysis_anglezs_rings.hpp"
-#include "analysis_mindangles_seg.hpp"
-#include "analysis_avedangles_seg.hpp"
-#include "analysis_mindangles_seg_dislocated.hpp"
-#include "analysis_random_walk.hpp"
-#include "analysis_straight_chain.hpp"
-#include "analysis_rotate.hpp"
-#include "analysis_packing.hpp"
-#include "analysis_density_profile.hpp"
-#include "analysis_shell.hpp"
-#include "analysis_energy.hpp"
-#include "analysis_rdf.hpp"
-#include "analysis_functionalize.hpp"
-#include "analysis_patch_no_order.hpp"
-#include "analysis_passivation.hpp"
-#include "analysis_msd.hpp"
-#include "analysis_msd_region.hpp"
-#include "input.hpp"
-#ifndef ANALYSIS_POINTERS_HPP
-#define	ANALYSIS_POINTERS_HPP
+#include "cluster.hpp"
+#ifndef ANALYSIS_PASSIVATION_HPP
+#define	ANALYSIS_PASSIVATION_HPP
 
 using namespace std;
 
-class ANALYSIS_POINTERS
+class  ANALYSIS_PASSIVATION : public ANALYSIS
 {
 
 private:
@@ -55,22 +41,36 @@ private:
     
 public:
    
-    ERROR1 error1;
     // no public attributes
     // public methods
-    PSF *system;
-    vector<PSF*> monomers;
+//    GROUP *sel1;
+ //   int whichN;
+    //
+    int nclusters = 0;
+    int nresidues = 0;
+    vector<int> linkedlist;
+    ofstream *file_temp;
+    ofstream *seg_res_ids; 
     vector<GROUP*> sels;
-    vector<ANALYSIS*> analysis;
-    INPUT* input;
+    vector<CLUSTER*> clusters;
+    vector<vector<int>> residue_cluster_ind;
+    int crosslink_in_cluster = 0;
 
-    ANALYSIS_POINTERS(PSF *system, vector<GROUP*> sels, INPUT* input, vector<PSF*> monomers); //constructor
+    ifstream *input_cluster;
+    ofstream *output_cluster;
+
+    ANALYSIS_PASSIVATION(PSF *system, GROUP *sel1, GROUP *sel2, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string filename); //constructor
     
-    vector<ANALYSIS*> init();
-    //vector<vector<float>> anglezs_rings(GROUP *sel1);   
-//    vector<float> mindangles_seg(GROUP *sel1, int whichN);
+    void init();
+
+    string patchtype(string name1, string resname1, string name2, string resname2  );
+    string patchtype(string name1, string resname1 );
+    bool is_empty(std::ifstream *pFile);
+    void select_atoms(GROUP *atoms_select);
+
+    void compute_void();
      
-    virtual ~ANALYSIS_POINTERS();
+    ~ANALYSIS_PASSIVATION();
 
 };
 

@@ -334,6 +334,26 @@ vector<ANALYSIS*> ANALYSIS_POINTERS::init() {
                     }
                 }
                 analysis.push_back(new ANALYSIS_PATCH_NO_ORDER(system,sels[groupid],sels[groupid1],sels,vector1d,vector2d,voidf, input_cluster, output_cluster,filename,dist_crit,dr,cellsizex,cellsizey,cellsizez,crosslink_in_cluster));
+} else if (analysis_opt[0] == "passivation") {
+                int groupid;
+                int groupid1;
+                int whichN;
+                for (int argid = 1; argid < analysis_opt.size(); argid++) {
+                    if (analysis_opt[argid] == "group") {
+                        groupid = stoi(analysis_opt[argid+1]);
+                    } else if (analysis_opt[argid] == "group1") {
+                        groupid1 = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "vector1d") {
+                        vector1d = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "vector2d") {
+                        vector2d = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "voidf") {
+                        voidf = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "filename") {
+                        filename = analysis_opt[argid+1];
+                    }
+                }
+                analysis.push_back(new ANALYSIS_PASSIVATION(system,sels[groupid],sels[groupid1],sels,vector1d,vector2d,voidf, filename));
         } else if (analysis_opt[0] == "msd_region") {
 		int groupid;
 	 	int whichN;

@@ -635,16 +635,17 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
                         r[0] = system->x[ind1];
 	                    r[1] = system->y[ind1];
 	                    r[2] = system->z[ind1];
-                        for (int iprime = -1; iprime <=1; iprime++) {
+                        for (int iprime = max(-1,-xcount+1); iprime <= min(1,xcount-1); iprime++) {
                             int i2 = neighbor_cell_ind(i,iprime,xcount);
-                            for (int jprime = -1; jprime <=1; jprime++) {
+                            for (int jprime = max(-1,-ycount+1); jprime <= min(1,ycount-1); jprime++) {
                                 int j2 = neighbor_cell_ind(j,jprime,ycount);
-                                for (int kprime = -1; kprime <=1; kprime++) {
+                                for (int kprime = max(-1,-zcount+1); kprime <= min(1,zcount-1); kprime++) {
                                     int k2 = neighbor_cell_ind(k,kprime,zcount);
                                     int ind2 = heads[isel2][i2][j2][k2];
                                     while (1) {
                                         if (ind2 < 0) break;
                                         if (!(system->segid[ind1] == system->segid[ind2] && system->resid[ind1] == system->resid[ind2])) {
+
 
                                             r1[0] = system->x[ind2];
     	                                    r1[1] = system->y[ind2];
@@ -703,6 +704,11 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
         int cluster2;
 
 
+// begin debugging
+//            if (system->resid[ind1] == 649 || system->resid[ind2] == 649) cout << "Debugging print resid 649: " << system->resid[ind1] << "; ind2: " << ind2 << "; system->crosslinking_flag[ind2]: " << system->crosslinking_flag[ind2] << "; system->resid[ind2]: " << system->resid[ind2] << endl;
+//end debugging
+
+
         if (local_dist < dist_crit && system->crosslinking_flag[ind1] == 0 && system->crosslinking_flag[ind2] == 0) {
         /*    if (system->resname[ind1] == "NC4") {
                 functionalizing = 1;
@@ -718,10 +724,13 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
             }
         */
 
+
+
             if (system->resname[ind1] == "NC4" || system->resname[ind2] == "NC4") {
                 functionalizing = 1;
                 if (system->functionalizing_flag[ind1] == 1 || system->functionalizing_flag[ind2] == 1) functionalized = 1;
             }
+
 
             //if not (functionalizing and functionzlized) 
                 if (! (functionalizing == 1 && functionalized == 1) ) {

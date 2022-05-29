@@ -40,6 +40,10 @@
     "system_error": "cpp",
     "unordered_map": "cpp",
     "vector": "cpp",
-    "iosfwd": "cpp"
+    "iosfwd": "cpp",
+    "ostream": "cpp",
+    "algorithm": "cpp",
+    "chrono": "cpp",
+    "limits": "cpp"
   }
 }
