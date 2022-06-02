@@ -54,7 +54,6 @@ protected:
     int QCRYS;  //ICNTRL(11) is 1 if CRYSTAL used.
     int CHARMV; //ICNTRL(20) is charmm version
     
-    int NATOM; // Number of atoms
     
     int LNFREAT; // Number of free (moving) atoms.
     int *FREEAT; // Array storing indexes of moving atoms.
@@ -77,6 +76,7 @@ public:
     PSF* system;
 
     DCD();
+    int NATOM; // Number of atoms
     
     int getNFILE() const;
 

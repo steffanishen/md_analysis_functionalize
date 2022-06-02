@@ -742,7 +742,9 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
                         merge_clusters(cluster1,cluster2);
                         string patchtype = this->patchtype(system->atomname[ind1],system->resname[ind1],system->atomname[ind2],system->resname[ind2]);
                         *this->file_temp << "patch " << patchtype << " " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << endl;
-                        *this->seg_res_ids << segid1 << " " << resid1 << " " << segid2 << " " << resid2 << endl;
+                        cout << "patch " << patchtype << " " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << "; distance: " << local_dist << endl;
+                        //*this->seg_res_ids << segid1 << " " << resid1 << " " << segid2 << " " << resid2 << endl;
+                        *this->seg_res_ids << ind1 << " " << ind2 << endl;
                         system->crosslinking_flag[ind1] = 1;
                         system->crosslinking_flag[ind2] = 1;
 
@@ -756,7 +758,9 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
                     } else if (crosslink_in_cluster == 1) {
                         string patchtype = this->patchtype(system->atomname[ind1],system->resname[ind1],system->atomname[ind2],system->resname[ind2]);
                         *this->file_temp << "patch " << patchtype << " " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << endl;
-                        *this->seg_res_ids << segid1 << " " << resid1 << " " << segid2 << " " << resid2 << endl;
+                        cout << "patch " << patchtype << " " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << "; distance: " << local_dist << endl;
+                        //*this->seg_res_ids << segid1 << " " << resid1 << " " << segid2 << " " << resid2 << endl;
+                        *this->seg_res_ids << ind1 << " " << ind2 << endl;
                         system->crosslinking_flag[ind1] = 1;
                         system->crosslinking_flag[ind2] = 1;
 

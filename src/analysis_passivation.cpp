@@ -39,7 +39,7 @@
 
 using namespace std;
 
-ANALYSIS_PASSIVATION::ANALYSIS_PASSIVATION(PSF *system, GROUP *sel1, GROUP *sel2, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string filename)
+ANALYSIS_PASSIVATION::ANALYSIS_PASSIVATION(PSF *system, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string filename)
 {
     this->system = system;
     this->sels = sels;
@@ -51,8 +51,7 @@ ANALYSIS_PASSIVATION::ANALYSIS_PASSIVATION(PSF *system, GROUP *sel1, GROUP *sel2
     this->vector2d = vector2d;
     this->voidf = voidf;
     this->filename = filename;
-    nbins = int(this->dist_crit/dr);
-    this->rdf_count.resize(nbins);
+    //this->rdf_count.resize(nbins);
     fill(this->rdf_count.begin(), this->rdf_count.end(),0.0);
     this->iframe = 0;
     this->file_temp = new ofstream(filename);

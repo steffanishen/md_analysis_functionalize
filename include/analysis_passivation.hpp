@@ -59,7 +59,7 @@ public:
     ifstream *input_cluster;
     ofstream *output_cluster;
 
-    ANALYSIS_PASSIVATION(PSF *system, GROUP *sel1, GROUP *sel2, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string filename); //constructor
+    ANALYSIS_PASSIVATION(PSF *system, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string filename); //constructor
     
     void init();
 

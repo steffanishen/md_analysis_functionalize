@@ -172,11 +172,17 @@ int main(int argc, char* argv[])
 
 //    cout << "Current index: " << analysis[0]->system->NATOM  << endl;
     int iframe = 0;
+    ERROR1 error1;
     for (DCD_R* dcdf:dcdfs) {
         for(int i=0;i<dcdf->getNFILE();i++)
         {
 
             dcdf->read_oneFrame();
+            if (dcdf->NATOM != sys.NATOM) {
+                cout << "dcd NATOM: " << dcdf->NATOM << "; psf NATOM: " << sys.NATOM << endl; 
+                error1.error_exit("The number of atoms in dcd doesn't match that of psf!!!");
+            }
+
             sys.iframe = iframe;
         /* analysis goes here */
             fprintf(outfile_box, "%10.6f %10.6f %10.6f\n", sys.pbc[0], sys.pbc[2], sys.pbc[5]);
