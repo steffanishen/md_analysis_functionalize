@@ -37,6 +37,8 @@ CLUSTER::CLUSTER(int cluster_ind)
     this->parent_cluster_ind = -1;
     kid_clusters.clear();
     residue_members.clear();
+    head_cap.resize(2,-1);
+    tail_cap.resize(2,-1);
 }
 
 

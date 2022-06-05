@@ -44,6 +44,13 @@
     "ostream": "cpp",
     "algorithm": "cpp",
     "chrono": "cpp",
-    "limits": "cpp"
+    "limits": "cpp",
+    "array": "cpp",
+    "bitset": "cpp",
+    "initializer_list": "cpp",
+    "iterator": "cpp",
+    "stack": "cpp",
+    "string_view": "cpp",
+    "utility": "cpp"
   }
 }

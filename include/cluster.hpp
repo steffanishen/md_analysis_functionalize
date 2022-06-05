@@ -42,6 +42,12 @@ public:
     vector<vector<int>> residue_members; 
 
     vector<CLUSTER*> kid_clusters;
+
+    int head_C1 = -1;
+    int tail_C2 = -1;
+
+    vector<int> head_cap;
+    vector<int> tail_cap;
    
 
     CLUSTER(int cluster_ind);

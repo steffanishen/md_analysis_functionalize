@@ -93,6 +93,7 @@ public:
     float cellsizex = 10.0;
     float cellsizey = 10.0;
     float cellsizez = 10.0;
+    int pre_crosslinking = 0;
     int xcount; 
     int ycount; 
     int zcount; 

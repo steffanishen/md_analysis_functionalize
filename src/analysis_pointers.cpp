@@ -300,6 +300,7 @@ vector<ANALYSIS*> ANALYSIS_POINTERS::init() {
                 float cellsizey;
                 float cellsizez;
                 int crosslink_in_cluster;
+                int pre_crosslinking;
                 string input_cluster;
                 string output_cluster;
                 for (int argid = 1; argid < analysis_opt.size(); argid++) {
@@ -331,9 +332,11 @@ vector<ANALYSIS*> ANALYSIS_POINTERS::init() {
                         cellsizez = stof(analysis_opt[argid+1]);
                     } else if (analysis_opt[argid] == "crosslink_in_cluster") {
                         crosslink_in_cluster = stoi(analysis_opt[argid+1]);
+                    } else if (analysis_opt[argid] == "pre_crosslinking") {
+                        pre_crosslinking = stoi(analysis_opt[argid+1]);
                     }
                 }
-                analysis.push_back(new ANALYSIS_PATCH_NO_ORDER(system,sels[groupid],sels[groupid1],sels,vector1d,vector2d,voidf, input_cluster, output_cluster,filename,dist_crit,dr,cellsizex,cellsizey,cellsizez,crosslink_in_cluster));
+                analysis.push_back(new ANALYSIS_PATCH_NO_ORDER(system,sels[groupid],sels[groupid1],sels,vector1d,vector2d,voidf, input_cluster, output_cluster,filename,dist_crit,dr,cellsizex,cellsizey,cellsizez,crosslink_in_cluster,pre_crosslinking));
 } else if (analysis_opt[0] == "passivation") {
                 int groupid;
                 int groupid1;

@@ -39,7 +39,7 @@
 
 using namespace std;
 
-ANALYSIS_PATCH_NO_ORDER::ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP *sel2, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string input_cluster_name, string output_cluster_name, string filename, float dist_crit, float dr, float cellsizex, float cellsizey, float cellsizez, int crosslink_in_cluster)
+ANALYSIS_PATCH_NO_ORDER::ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP *sel2, vector<GROUP*> sels, int vector1d, int vector2d, int voidf, string input_cluster_name, string output_cluster_name, string filename, float dist_crit, float dr, float cellsizex, float cellsizey, float cellsizez, int crosslink_in_cluster, int pre_crosslinking)
 {
     this->system = system;
     this->sels = sels;
@@ -68,6 +68,7 @@ ANALYSIS_PATCH_NO_ORDER::ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP
     this->seg_res_ids = new ofstream("seg_res_ids.dat");
    // fstream *input_cluster = new fstream(input_cluster_name);
     this->crosslink_in_cluster = crosslink_in_cluster;
+    this->pre_crosslinking = pre_crosslinking;
 
     input_cluster = new ifstream(input_cluster_name);
 /*
@@ -108,6 +109,7 @@ ANALYSIS_PATCH_NO_ORDER::ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP
     output_cluster = new ofstream(output_cluster_name);
    // clusters.resize(system->segments.size(), vector<CLUSTER*>(system->segments[0].size(), new CLUSTER(-1)));
     residue_cluster_ind.resize(system->segments.size(), vector<int>(system->segments[0].size() ));
+    residue_chain_ind.resize(system->segments.size(), vector<int>(system->segments[0].size(),-1 ));
 
     system->segid_ind.clear();
     system->resid_ind.clear();
@@ -283,6 +285,57 @@ void ANALYSIS_PATCH_NO_ORDER::initialize_clusters() {
 
 }
 
+void ANALYSIS_PATCH_NO_ORDER::initialize_chains() {
+    int ichain = 0;
+    nresidues = 0;
+    for (int i = 0; i < system->segments.size(); i++) {
+        for (int i1 = 0; i1 < system->segments[i].size(); i1++) {
+            int ind1 = system->segments[i][i1][0];
+            if (system->resname[ind1] == "STYR") {
+                residue_chain_ind[i][i1] = ichain;
+                CLUSTER *chain_temp = new CLUSTER(ichain);
+                chain_temp->residue_members.push_back({i,i1});
+                
+                for (int i2 = 0; i2 < system->segments[i][i1].size(); i2++) {
+                    int atom_index = system->segments[i][i1][i2];
+                    if (system->atomname[atom_index] == "C1") {
+                        for (auto &ibonded: system->ibond_atom[atom_index]) {
+                            if (system->resname[ibonded] == "DVB") {
+                                chain_temp->head_cap[0] = system->segid_ind[ibonded];
+                                chain_temp->head_cap[1] = system->resid_ind[ibonded];
+                                chain_temp->head_C1 = atom_index;
+                            }
+                        }
+
+                    } else if (system->atomname[atom_index] == "C2") {
+                        for (auto &ibonded: system->ibond_atom[atom_index]) {
+                            if (system->resname[ibonded] == "DVB") {
+                                chain_temp->tail_cap[0] = system->segid_ind[ibonded];
+                                chain_temp->tail_cap[1] = system->resid_ind[ibonded];
+                                chain_temp->tail_C2 = atom_index;
+                            }
+                        }
+
+                    } 
+                        
+                }
+
+                chains.push_back(chain_temp);
+
+                ichain++;
+
+            }
+
+            nresidues++;
+        }
+    }
+    nchains = ichain;
+
+}
+
+
+
+
 void ANALYSIS_PATCH_NO_ORDER::organize_clusters(int cluster_id, int cluster_main_id) {
     if (clusters[cluster_id]->kid_clusters.size() > 0) {
         clusters[cluster_main_id]->residue_members.insert(clusters[cluster_main_id]->residue_members.end(),clusters[cluster_id]->residue_members.begin(),clusters[cluster_id]->residue_members.end());
@@ -352,6 +405,40 @@ void ANALYSIS_PATCH_NO_ORDER::reduce_clusters_corr() {
 }
 
 
+void ANALYSIS_PATCH_NO_ORDER::reduce_chains_corr() {
+    int ichain = 0;
+    int segid_temp;
+    int resid_temp;
+    for (int i = 0; i < chains.size(); i++) {
+        if (chains[i]->cluster_ind != -1) {
+            chains[i]->cluster_ind = ichain;
+            for (int i1 = 0; i1 < chains[i]->residue_members.size(); i1++) {
+                segid_temp = chains[i]->residue_members[i1][0];
+                resid_temp = chains[i]->residue_members[i1][1];
+                residue_chain_ind[segid_temp][resid_temp] = ichain;
+            }
+            ichain++;
+        }
+    }
+
+    auto it = chains.begin();
+    while (it != chains.end()) {
+        if ( (*it)->cluster_ind == -1) {
+//            cout << "parent_cluster_ind: " << (*it)->parent_cluster_ind << endl;
+            it = chains.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    nchains = chains.size();
+        
+}
+
+
+
+
+
+
 void ANALYSIS_PATCH_NO_ORDER::merge_clusters(int cluster1, int cluster2) {
     int minid = min(cluster1,cluster2);
     int maxid = max(cluster1,cluster2);
@@ -365,6 +452,33 @@ void ANALYSIS_PATCH_NO_ORDER::merge_clusters(int cluster1, int cluster2) {
     
     clusters[maxid]->residue_members.clear();
     clusters[maxid]->cluster_ind = -1;
+}
+
+
+void ANALYSIS_PATCH_NO_ORDER::merge_chains(int chain1, int chain2) {
+    int minid = min(chain1,chain2);
+    int maxid = max(chain1,chain2);
+    //clusters[minid]->residue_members.insert(clusters[minid]->residue_members.end(),clusters[maxid]->residue_members.begin(),clusters[maxid]->residue_members.end());
+    chains[chain1]->head_C1 = chains[chain2]->head_C1;
+    chains[chain1]->head_cap[0] = chains[chain2]->head_cap[0]; 
+    chains[chain1]->head_cap[1] = chains[chain2]->head_cap[1];
+    chains[chain2]->tail_C2 = chains[chain1]->tail_C2;
+    chains[chain2]->tail_cap[0] = chains[chain1]->tail_cap[0];
+    chains[chain2]->tail_cap[1] = chains[chain1]->tail_cap[1];
+    for (int i = 0; i < chains[maxid]->residue_members.size(); i++) {
+        int segid_temp = chains[maxid]->residue_members[i][0];
+        int resid_temp = chains[maxid]->residue_members[i][1];
+        residue_chain_ind[segid_temp][resid_temp] = minid;
+        chains[minid]->residue_members.push_back({segid_temp,resid_temp});
+    }
+
+    
+    chains[maxid]->residue_members.clear();
+    chains[maxid]->cluster_ind = -1;
+    chains[maxid]->head_cap.resize(2,-1);
+    chains[maxid]->tail_cap.resize(2,-1);
+    chains[maxid]->head_C1 = -1;
+    chains[maxid]->tail_C2 = -1;
 }
 
 
@@ -384,30 +498,103 @@ void ANALYSIS_PATCH_NO_ORDER::find_initial_clusters() {
                 if (cluster1 != cluster2) {
                     merge_clusters(cluster1,cluster2);
                 }
-                /*
-                if (cluster1 < cluster2) {
-                    clusters[cluster2]->parent_cluster_ind = cluster1;
-                    clusters[cluster1]->kid_clusters.push_back(clusters[cluster2]);
-                } else if (cluster1 > cluster2) {
-                    clusters[cluster1]->parent_cluster_ind = cluster2;
-                    clusters[cluster2]->kid_clusters.push_back(clusters[cluster1]);
-                }
-                */
             }
     }
 
-/*
-    for (int i = 0; i < clusters.size(); i++) {
-        int cluster_ind_main;
-        if (clusters[i]->parent_cluster_ind == -1) {
-            cluster_ind_main = clusters[i]->cluster_ind;
-            organize_clusters(i,cluster_ind_main);
-        }
-    }
- */
     reduce_clusters_corr();
 
 }
+
+void ANALYSIS_PATCH_NO_ORDER::find_initial_chains() {
+    for (int i = 0; i < system->NBONDS; i++) {
+        int iatom = system->ibond[i][0];
+        if (system->resname[iatom] == "STYR") {
+            int jatom = system->ibond[i][1];
+            if (system->resname[jatom] == "STYR") {
+                int segid_temp0 = system->segid_ind[iatom];
+                int resid_temp0 = system->resid_ind[iatom];
+                int segid_temp1 = system->segid_ind[jatom];
+                int resid_temp1 = system->resid_ind[jatom];
+                int chain1;
+                int chain2;
+                if (segid_temp0 != segid_temp1 || resid_temp0 != resid_temp1) {
+                    chain1 = residue_chain_ind[segid_temp0][resid_temp0];
+                    chain2 = residue_chain_ind[segid_temp1][resid_temp1]; 
+                    if (chain1 != chain2) {
+                        if (system->atomname[iatom] == "C1" && system->atomname[jatom] == "C2") {
+                            merge_chains(chain1,chain2);
+                        } else if (system->atomname[iatom] == "C2" && system->atomname[jatom] == "C1") {
+                            merge_chains(chain2,chain1);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    reduce_chains_corr();
+
+}
+
+int ANALYSIS_PATCH_NO_ORDER::form_ring_styr(int ind1,int ind2) {
+    int form_ring = 0;
+    int segid1_ind = system->segid_ind[ind1];
+    int segid2_ind = system->segid_ind[ind2];
+    int resid1_ind = system->resid_ind[ind1];
+    int resid2_ind = system->resid_ind[ind2];
+
+    int chain1 = residue_chain_ind[segid1_ind][resid1_ind];
+    int chain2 = residue_chain_ind[segid2_ind][resid2_ind];
+
+    if (chain1 == chain2) form_ring = 1;
+
+    if (system->atomname[ind1] == "C1" && system->atomname[ind2] == "C2") {
+        if (!(chains[chain1]->tail_cap[0] == -1 && chains[chain2]->head_cap[0] == -1)) {
+            if (chains[chain1]->tail_cap[0] == chains[chain2]->head_cap[0] && chains[chain1]->tail_cap[1] == chains[chain2]->head_cap[1]) {
+                form_ring = 1;
+            }
+        }
+        
+    } else if (system->atomname[ind1] == "C2" && system->atomname[ind2] == "C1") {
+        if (!(chains[chain1]->head_cap[0] == -1 && chains[chain2]->tail_cap[0] == -1)) {
+            if (chains[chain1]->head_cap[0] == chains[chain2]->tail_cap[0] && chains[chain1]->head_cap[1] == chains[chain2]->tail_cap[1]) {
+                form_ring = 1;
+            }
+        }
+    } else {
+        cout << "STYR1: " << system->atomname[ind1] << "; STYR2: " << system->atomname[ind2] << endl;
+        error1.error_exit("The atomnames for crosslinking type is wrong!!");
+    }
+
+    return form_ring;
+}
+
+
+int ANALYSIS_PATCH_NO_ORDER::form_ring_dvb(int ind1,int ind2) {
+    int form_ring = 0;
+    int segid1_ind = system->segid_ind[ind1];
+    int segid2_ind = system->segid_ind[ind2];
+    int resid1_ind = system->resid_ind[ind1];
+    int resid2_ind = system->resid_ind[ind2];
+
+    int ichain = residue_chain_ind[segid1_ind][resid1_ind];
+
+    if (system->atomname[ind1] == "C1") {
+        if (chains[ichain]->tail_cap[0] == segid2_ind && chains[ichain]->tail_cap[1] == resid2_ind) {
+            form_ring = 1;
+        }
+        
+    } else if (system->atomname[ind1] == "C2") {
+        if (chains[ichain]->head_cap[0] == segid2_ind && chains[ichain]->head_cap[1] == resid2_ind) {
+            form_ring = 1;
+        }
+    } else {
+        error1.error_exit("The atomnames for crosslinking type is wrong!!");
+    }
+
+    return form_ring;
+}
+
 
 
 void ANALYSIS_PATCH_NO_ORDER:: select_atoms(GROUP *atoms_select) {
@@ -426,10 +613,20 @@ void ANALYSIS_PATCH_NO_ORDER:: select_atoms(GROUP *atoms_select) {
         int atom_index = atom.atom_index;
         int flag = 0;
         for (auto &ibonded: system->ibond_atom[atom_index]) {
-            if (! (system->segid[ibonded] == system->segid[atom_index] && system->resid[ibonded] == system->resid[atom_index])) flag = 1;
+            int segid1_ind = system->segid_ind[atom_index];        
+            int resid1_ind = system->resid_ind[atom_index];       
+            if (! (system->segid[ibonded] == system->segid[atom_index] && system->resid[ibonded] == system->resid[atom_index])) {
+                system->crosslinking_flag[atom_index] = 1;
+                flag = 1;
+                if (this->pre_crosslinking == 1 && system->resname[atom_index] == "STYR") {
+                    flagallinres(segid1_ind,resid1_ind);
+                }
+            }
         }
         if (flag == 0 && system->functionalizing_flag[atom_index] == 0) atoms.push_back(atom);
     }
+
+
 
     atoms_select->atoms.clear();
     copy(atoms.begin(),atoms.end(),back_inserter(atoms_select->atoms));
@@ -616,8 +813,12 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
 // Initialize the residue clusters
     initialize_clusters();
 
+// Initialize the residue chains
+    initialize_chains();
+
 // Merge the initial clusters
     find_initial_clusters(); 
+    find_initial_chains(); 
 
 
     cout << "nresidues: " << nresidues << "; nclusters: " << nclusters << endl;
@@ -703,6 +904,12 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
         int cluster1;
         int cluster2;
 
+        int chain1 = residue_chain_ind[segid1_ind][resid1_ind];
+        int chain2 = residue_chain_ind[segid2_ind][resid2_ind];
+
+        int form_ring = 0;
+        int ichain;
+
 
 // begin debugging
 //            if (system->resid[ind1] == 649 || system->resid[ind2] == 649) cout << "Debugging print resid 649: " << system->resid[ind1] << "; ind2: " << ind2 << "; system->crosslinking_flag[ind2]: " << system->crosslinking_flag[ind2] << "; system->resid[ind2]: " << system->resid[ind2] << endl;
@@ -740,6 +947,35 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
                     if (cluster1 != cluster2) {
                         cout << "merge cluster1: " << cluster1 << " and cluster2: " << cluster2 << endl;
                         merge_clusters(cluster1,cluster2);
+                        if (system->resname[ind1] == "STYR" && system->resname[ind2] == "STYR") {
+                            chain1 = residue_chain_ind[segid1_ind][resid1_ind];
+                            chain2 = residue_chain_ind[segid2_ind][resid2_ind];
+
+                            if (system->atomname[ind1] == "C1" && system->atomname[ind2] == "C2") {
+                                merge_chains(chain1,chain2);
+                            } else if (system->atomname[ind1] == "C2" && system->atomname[ind2] == "C1") {
+                                merge_chains(chain2,chain1);
+                            }
+                        } else if (system->resname[ind1] == "STYR" && system->resname[ind2] == "DVB") {
+                            ichain = residue_chain_ind[segid1_ind][resid1_ind];
+                            if (system->atomname[ind1] == "C1") {
+                                chains[ichain]->head_cap[0] = segid2_ind;
+                                chains[ichain]->head_cap[1] = resid2_ind;
+                            } else if (system->atomname[ind1] == "C2") { 
+                                chains[ichain]->tail_cap[0] = segid2_ind;
+                                chains[ichain]->tail_cap[1] = resid2_ind;
+                            }
+                        } else if (system->resname[ind2] == "STYR" && system->resname[ind1] == "DVB") {
+                            ichain = residue_chain_ind[segid2_ind][resid2_ind];
+                            if (system->atomname[ind2] == "C1") {
+                                chains[ichain]->head_cap[0] = segid1_ind;
+                                chains[ichain]->head_cap[1] = resid1_ind;
+                            } else if (system->atomname[ind2] == "C2") { 
+                                chains[ichain]->tail_cap[0] = segid1_ind;
+                                chains[ichain]->tail_cap[1] = resid1_ind;
+                            }
+                        } 
+
                         string patchtype = this->patchtype(system->atomname[ind1],system->resname[ind1],system->atomname[ind2],system->resname[ind2]);
                         *this->file_temp << "patch " << patchtype << " " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << endl;
                         cout << "patch " << patchtype << " " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << "; distance: " << local_dist << endl;
@@ -755,7 +991,59 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
                             flagallinres(segid2_ind, resid2_ind);
                             flagfunctionalization(segid1_ind, resid1_ind);
                         }
+
+                        if (this->pre_crosslinking == 1) {
+                            if (system->resname[ind1] == "STYR") {
+                                flagallinres(segid1_ind, resid1_ind);
+                            } else if (system->resname[ind2] == "STYR") {
+                                flagallinres(segid2_ind, resid2_ind);
+                            }
+                        }
+                        
                     } else if (crosslink_in_cluster == 1) {
+
+                        if (system->resname[ind1] == "STYR" && system->resname[ind2] == "STYR") {
+                            chain1 = residue_chain_ind[segid1_ind][resid1_ind];
+                            chain2 = residue_chain_ind[segid2_ind][resid2_ind];
+
+                            form_ring = form_ring_styr(ind1,ind2);
+                            if (form_ring == 1) continue;
+
+                            if (system->atomname[ind1] == "C1" && system->atomname[ind2] == "C2") {
+                                    merge_chains(chain1,chain2);
+                                } else if (system->atomname[ind1] == "C2" && system->atomname[ind2] == "C1") {
+                                    merge_chains(chain2,chain1);
+                                }
+                            } else if (system->resname[ind1] == "STYR" && system->resname[ind2] == "DVB") {
+
+                                ichain = residue_chain_ind[segid1_ind][resid1_ind];
+
+                                form_ring = form_ring_dvb(ind1,ind2);
+                                if (form_ring == 1) continue;
+
+                                if (system->atomname[ind1] == "C1") {
+                                    chains[ichain]->head_cap[0] = segid2_ind;
+                                    chains[ichain]->head_cap[1] = resid2_ind;
+                                } else if (system->atomname[ind1] == "C2") { 
+                                    chains[ichain]->tail_cap[0] = segid2_ind;
+                                    chains[ichain]->tail_cap[1] = resid2_ind;
+                                }
+                            } else if (system->resname[ind2] == "STYR" && system->resname[ind1] == "DVB") {
+
+                                ichain = residue_chain_ind[segid2_ind][resid2_ind];
+
+                                form_ring = form_ring_dvb(ind2,ind1);
+                                if (form_ring == 1) continue;
+
+                                if (system->atomname[ind2] == "C1") {
+                                    chains[ichain]->head_cap[0] = segid1_ind;
+                                    chains[ichain]->head_cap[1] = resid1_ind;
+                                } else if (system->atomname[ind2] == "C2") { 
+                                    chains[ichain]->tail_cap[0] = segid1_ind;
+                                    chains[ichain]->tail_cap[1] = resid1_ind;
+                                }
+                            }
+
                         string patchtype = this->patchtype(system->atomname[ind1],system->resname[ind1],system->atomname[ind2],system->resname[ind2]);
                         *this->file_temp << "patch " << patchtype << " " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << endl;
                         cout << "patch " << patchtype << " " << segid1 << ":" << resid1 << " " << segid2 << ":" << resid2 << "; distance: " << local_dist << endl;
@@ -764,6 +1052,7 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
                         system->crosslinking_flag[ind1] = 1;
                         system->crosslinking_flag[ind2] = 1;
 
+
                         if (system->resname[ind1] == "NC4") {
                             flagallinres(segid1_ind, resid1_ind);
                             flagfunctionalization(segid2_ind, resid2_ind);
@@ -771,6 +1060,16 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
                             flagallinres(segid2_ind, resid2_ind);
                             flagfunctionalization(segid1_ind, resid1_ind);
                         }
+
+                        if (this->pre_crosslinking == 1) {
+                            if (system->resname[ind1] == "STYR") {
+                                flagallinres(segid1_ind, resid1_ind);
+                            } else if (system->resname[ind2] == "STYR") {
+                                flagallinres(segid2_ind, resid2_ind);
+                            }
+                        }
+
+
                     }
                 }
             //}
