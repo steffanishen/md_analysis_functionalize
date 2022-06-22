@@ -85,7 +85,7 @@ vector<float> ANALYSIS_TRAJECTORY_EXTRACT::compute_vector() {
     	    r[1] = system->y[ind];
     	    r[2] = system->z[ind];
 
-            for (int dim = 0; dim < 3; dim++) {
+            for (int dim = 1; dim <= 3; dim++) {
                 r_ave[dim] += r[dim];
             }
     //cout << "sel1->atom_index: " << system->atom_index[ind] << endl; //for debug purpose
