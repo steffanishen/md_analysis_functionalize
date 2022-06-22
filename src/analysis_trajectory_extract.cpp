@@ -56,7 +56,7 @@ void ANALYSIS_TRAJECTORY_EXTRACT::init() {
 vector<float> ANALYSIS_TRAJECTORY_EXTRACT::compute_vector() {
     sel1->anglezs.clear();
     vector<float> r(3,0.0);
-    vector<float> r_ave(3,0.0);
+    vector<float> r_ave(4,0.0);
     vector<float> disp(3,0.0);
     float dist2;
     int izbin;
@@ -77,7 +77,7 @@ vector<float> ANALYSIS_TRAJECTORY_EXTRACT::compute_vector() {
     //cout << "sel2->NATOM: " << sel2->NATOM << endl; //for debug purpose
 //    cout << "M_PI" << M_PI << endl;// for debug purpose
  
-    //r_ave = {0.0,0.0,0.0};
+    r_ave = {float(this->iframe),0.0,0.0,0.0};
     for (auto &segment:sel1->segments_ind) {
     	for (int ind : segment) {
             cout << "debug: " << ind << endl;
