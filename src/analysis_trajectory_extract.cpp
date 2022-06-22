@@ -73,14 +73,14 @@ vector<float> ANALYSIS_TRAJECTORY_EXTRACT::compute_vector() {
 
 
     if (sel1->NATOM == 0) error1.error_exit("ERROR: sel1 doesn't contain any atoms!");
-    if (sel2->NATOM == 0) error1.error_exit("ERROR: sel2 doesn't contain any atoms!");
     //cout << "sel1->NATOM: " << sel1->NATOM << endl; //for debug purpose
     //cout << "sel2->NATOM: " << sel2->NATOM << endl; //for debug purpose
 //    cout << "M_PI" << M_PI << endl;// for debug purpose
  
-    r_ave = {0.0,0.0,0.0};
+    //r_ave = {0.0,0.0,0.0};
     for (auto &segment:sel1->segments_ind) {
     	for (int ind : segment) {
+            cout << "debug: " << ind << endl;
     	    r[0] = system->x[ind];
     	    r[1] = system->y[ind];
     	    r[2] = system->z[ind];
