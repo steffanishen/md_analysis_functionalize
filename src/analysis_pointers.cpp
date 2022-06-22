@@ -243,6 +243,30 @@ vector<ANALYSIS*> ANALYSIS_POINTERS::init() {
                 }
                 analysis.push_back(new ANALYSIS_RDF(system,sels[groupid],sels[groupid1],vector1d,vector2d,voidf,filename,dist_crit,dr));
 
+        } else if (analysis_opt[0] == "trajectory_extract") {
+                int groupid;
+                int groupid1;
+                int whichN;
+                float dist_crit;
+                float dr;
+                for (int argid = 1; argid < analysis_opt.size(); argid++) {
+                    if (analysis_opt[argid] == "group") {
+                        groupid = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "vector1d") {
+                        vector1d = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "vector2d") {
+                        vector2d = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "voidf") {
+                        voidf = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "filename") {
+                        filename = analysis_opt[argid+1];
+                    }
+                }
+                analysis.push_back(new ANALYSIS_TRAJECTORY_EXTRACT(system,sels[groupid],vector1d,vector2d,voidf,filename));
+
+
+
+
         } else if (analysis_opt[0] == "msd") {
 		int groupid;
 	 	int whichN;
