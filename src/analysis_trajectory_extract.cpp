@@ -80,7 +80,6 @@ vector<float> ANALYSIS_TRAJECTORY_EXTRACT::compute_vector() {
     r_ave = {float(this->iframe),0.0,0.0,0.0};
     for (auto &segment:sel1->segments_ind) {
     	for (int ind : segment) {
-            cout << "debug: " << ind << endl;
     	    r[0] = system->x[ind];
     	    r[1] = system->y[ind];
     	    r[2] = system->z[ind];
