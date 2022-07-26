@@ -80,12 +80,12 @@ vector<float> ANALYSIS_TRAJECTORY_EXTRACT::compute_vector() {
     r_ave = {float(this->iframe),0.0,0.0,0.0};
     for (auto &segment:sel1->segments_ind) {
     	for (int ind : segment) {
-    	    r[1] = system->x[ind];
-    	    r[2] = system->y[ind];
-    	    r[3] = system->z[ind];
+    	    r[0] = system->x[ind];
+    	    r[1] = system->y[ind];
+    	    r[2] = system->z[ind];
 
-            for (int dim = 1; dim <= 3; dim++) {
-                r_ave[dim] += r[dim];
+            for (int dim = 0; dim < 3; dim++) {
+                r_ave[dim+1] += r[dim];
             }
     //cout << "sel1->atom_index: " << system->atom_index[ind] << endl; //for debug purpose
     //cout << "sel1->atomtype: " << system->atomtype[ind] << endl; //for debug purpose
@@ -95,7 +95,11 @@ vector<float> ANALYSIS_TRAJECTORY_EXTRACT::compute_vector() {
     	}
     }
 
+    for (int dim = 1; dim <= 3; dim++) {
+        r_ave[dim] /= float(sel1->NATOM);
+    }
 
+   cout << sel1->NATOM << endl;
 
     return r_ave;
 }
