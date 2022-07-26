@@ -4,9 +4,9 @@
 
 #CXX=g++
 
-CXX_OPT= -std=c++0x -I "./include" -Wall -Wextra -O2 
+CXX_OPT= -std=c++0x -I "./include" -I "/Users/meshen/Documents/Research/Codes/CPP/eigen-3.4.0"  -Wall -Wextra -O2 
 
-LD_LIB=
+LD_LIB= 
 
 LD_OPT=
 

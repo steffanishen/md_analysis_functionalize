@@ -41,6 +41,7 @@
 #include "analysis_passivation.hpp"
 #include "analysis_msd.hpp"
 #include "analysis_msd_region.hpp"
+#include "analysis_contact_angle.hpp"
 #include "input.hpp"
 #ifndef ANALYSIS_POINTERS_HPP
 #define	ANALYSIS_POINTERS_HPP
