@@ -43,6 +43,7 @@ public:
     vector<float> coord{0.0, 0.0, 0.0};
 
     int segid;
+    string segname;
     int resid;
     string resname;
     string atomname;
@@ -64,6 +65,7 @@ public:
     int string_comp_segid(vector<string> str);
     int string_comp_resid(vector<string> str);
     int string_comp_resname(vector<string> str);
+    int string_comp_segname(vector<string> str);
     int string_comp_atomname(vector<string> str);
     int string_comp_atomtype(vector<string> str);
     int string_comp_charge(vector<string> str);

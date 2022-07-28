@@ -45,6 +45,8 @@ public:
 //    GROUP *sel1;
  //   int whichN;
     //
+    int iframe;
+
     vector<int> linkedlist;
     ofstream *file_temp; 
 

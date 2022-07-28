@@ -44,6 +44,7 @@ public:
     // public methods
 //    GROUP *sel1;
  //   int whichN;
+    int iframe;
 
     ANALYSIS_TRAJECTORY_EXTRACT(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename); //constructor
     

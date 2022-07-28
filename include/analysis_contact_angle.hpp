@@ -27,6 +27,7 @@
 #include "group.hpp"
 #include "analysis.hpp"
 #include <Eigen/Dense>
+#include <Eigen/QR>
 #ifndef ANALYSIS_CONTACT_ANGLE_HPP
 #define	ANALYSIS_CONTACT_ANGLE_HPP
 
@@ -40,18 +41,40 @@ private:
     //no private methods
     
 public:
-   
+   float contact_angle = 0.0;
     // no public attributes
     // public methods
 //    GROUP *sel1;
  //   int whichN;
     //
-    ANALYSIS_CONTACT_ANGLE(PSF *system, GROUP *sel1, GROUP *sel2, int vector1d, int vector2d, int voidf, string filename, float dist_crit, float dr); //constructor
+    float yshift;
+    float zshift;
+    int ybins;
+    int zbins;
+    int zlower;
+    int every_n_frame;
+    int nframes;
+
+    int iframe;
+
+    float density_bulk = 0.0;
+    
+    ofstream *file_temp = new ofstream ("contour.dat");
+
+    vector<vector<float>> density_yz;
+
+    ANALYSIS_CONTACT_ANGLE(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, float zshift, float dr, float zlower, int every_n_frame); //constructor
     
     void init();
 
     vector<float> compute_vector();
-     
+    float find_ellipse_x(float yan, vector<double> coeffs);
+    vector<float> find_ellipse_y(vector<float> xan, vector<double> coeffs);
+    vector<float> find_ellipse_y_neg(vector<float> xan, vector<double> coeffs);
+    vector<float> find_parabola_y(vector<float> xan, vector<double> coeffs);
+
+    void polyfit(	const std::vector<double> &t, const std::vector<double> &v, std::vector<double> &coeff,	int order);
+
     ~ANALYSIS_CONTACT_ANGLE();
 
 };

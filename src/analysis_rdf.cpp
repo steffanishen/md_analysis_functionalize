@@ -52,6 +52,8 @@ ANALYSIS_RDF::ANALYSIS_RDF(PSF *system, GROUP *sel1, GROUP *sel2, int vector1d, 
     this->rdf_count.resize(nbins);
     fill(this->rdf_count.begin(), this->rdf_count.end(),0.0);
     this->iframe = 0;
+
+
 }
 
 void ANALYSIS_RDF::init() {

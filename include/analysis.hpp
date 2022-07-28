@@ -70,7 +70,6 @@ public:
     float lz;
     float sigma = 1.0;
     float epsilon = 1.0;
-    int iframe;
     vector<int> hitwall = {0,0,0,0,0,0}; //determine if the residue gos outside the wall
 //    int hitwall = 0;
     vector<float> x_temp;
@@ -143,6 +142,7 @@ public:
     void residue_rotate_random_regular(int ind1, int ind2, int ind_pivot, float theta, int residueid, int ind_a2);
     void update_res(int residueid, int ind_a4_pre);
     void update_res_regular(int residueid);
+    vector<float> linspace(float rlow,float rhigh,float dr);
 
     virtual vector<vector<float>> bond_next(int residueid, PSF *monomer);
     virtual vector<vector<float>> bond_pre(int residueid, PSF *monomer);

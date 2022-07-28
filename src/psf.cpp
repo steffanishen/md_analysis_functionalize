@@ -53,6 +53,7 @@ void PSF::alloc()
 {
     atom_index = new int[NATOM];
     segid = new int[NATOM];
+    segname = new string[NATOM];
     resid = new int[NATOM];
     resname = new string[NATOM];
     atomname = new string[NATOM];
@@ -142,13 +143,15 @@ void PSF::read_atoms()
     int resid_run = 0;
     vector<int> residues_item;
     vector<vector<int>> segments_item;  
+    int segid_old = 0;
+    string segname_old = "";
 
     for (int i = 0; i < NATOM; i++) {
         getline (psff,lineStr);
         istringstream iss(lineStr);
         iss >> atom_index[i]; // comment: this is just a placeholder to release iss.
         atom_index[i] = i;
-        iss >> segid[i];
+        iss >> segname[i];
         iss >> resid[i];
         iss >> resname[i];
         iss >> atomname[i];
@@ -159,9 +162,18 @@ void PSF::read_atoms()
         nbonds_atom[i] = 0;
         tmin_msd[i] = -1;
         
+        if (segname[i] != segname_old) {
+          segname_old = segname[i];
+          segid_old++;
+        }
+
+        segid[i] = segid_old;
+
+
         ATOM atom;
         atom.atom_index = atom_index[i];
         atom.segid = segid[i];
+        atom.segname = segname[i];
         atom.resid = resid[i];
         atom.resname = resname[i];
         //cout << "MSe: resname:" << atom.resname << endl;

@@ -328,6 +328,15 @@ vector<int> ANALYSIS::cis_trans_id(vector<PSF*> monomers, string resname) {
     return indices;
 }
 
+vector<float> ANALYSIS::linspace(float rlow,float rhigh,float dr) {
+    int npoints = int((rhigh - rlow)/dr);
+    vector<float> array1(npoints,0.0);
+    for (int i = 0; i < array1.size(); i++) {
+        array1[i] = rlow + dr * float(i);
+    }
+    return array1;
+}
+
 
 void ANALYSIS::residue_rotate_reset(vector<float> vec_CC, int ind_pivot, vector<float> vec_ref, int residueid) { // rotate the atoms in residue[residueid] along the plane normal of the plane containing vec_ref and vec_CC from vec_ref to vec_CC
     

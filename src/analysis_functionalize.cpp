@@ -221,8 +221,8 @@ void ANALYSIS_FUNCTIONALIZE::compute_void() {
         float local_dist = distances[i];
         int ind1 = candidate_pairs[i_sorted][0];
         int ind2 = candidate_pairs[i_sorted][1];
-        int segid1 = system->segid[ind1];        
-        int segid2 = system->segid[ind2]; 
+        string segid1 = system->segname[ind1];        
+        string segid2 = system->segname[ind2]; 
         int resid1 = system->resid[ind1];       
         int resid2 = system->resid[ind2];       
 

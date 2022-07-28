@@ -51,6 +51,7 @@ public:
     
     int *atom_index; // Array storing indexes of moving atoms. Note the index start from 0.
     int *segid;
+    string *segname;
     int *resid;
     vector<int> segid_ind;
     vector<int> resid_ind;

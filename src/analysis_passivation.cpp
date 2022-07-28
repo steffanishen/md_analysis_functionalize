@@ -285,7 +285,7 @@ void ANALYSIS_PASSIVATION::compute_void() {
 	        for (int ind : segment) {
                 cout << "Atomname: " << system->atomname[ind] << "; Resname: " << system->resname[ind] << "; index: " << system->atom_index[ind] << " ; segid: " << system->segid[ind] << "; resid: " << system->resid[ind] << " ; Charge: " << system->charge[ind] << endl;
                 string patchtype = this->patchtype(system->atomname[ind],system->resname[ind]);
-                int segid1 = system->segid[ind];
+                string segid1 = system->segname[ind];
                 int resid1 = system->resid[ind];
                 *this->file_temp << "patch " << patchtype << " " << segid1 << ":" << resid1 << endl;
             }

@@ -247,13 +247,13 @@ vector<ANALYSIS*> ANALYSIS_POINTERS::init() {
                 int groupid;
                 int groupid1;
                 int whichN;
-                float dist_crit;
+                float zshift;
+                float zlower;
                 float dr;
+                int every_n_frame;
                 for (int argid = 1; argid < analysis_opt.size(); argid++) {
                     if (analysis_opt[argid] == "group") {
                         groupid = stoi(analysis_opt[argid+1]);
-                    } else if (analysis_opt[argid] == "group1") {
-                        groupid1 = stoi(analysis_opt[argid+1]);
                     }  else if (analysis_opt[argid] == "vector1d") {
                         vector1d = stoi(analysis_opt[argid+1]);
                     }  else if (analysis_opt[argid] == "vector2d") {
@@ -262,13 +262,17 @@ vector<ANALYSIS*> ANALYSIS_POINTERS::init() {
                         voidf = stoi(analysis_opt[argid+1]);
                     }  else if (analysis_opt[argid] == "filename") {
                         filename = analysis_opt[argid+1];
-                    }  else if (analysis_opt[argid] == "dist_crit") {
-                        dist_crit = stof(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "zshift") {
+                        zshift = stof(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "zlower") {
+                        zlower = stof(analysis_opt[argid+1]);
                     }  else if (analysis_opt[argid] == "dr") {
                         dr = stof(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "every_n_frame") {
+                        every_n_frame = stoi(analysis_opt[argid+1]);
                     }
                 }
-                analysis.push_back(new ANALYSIS_CONTACT_ANGLE(system,sels[groupid],sels[groupid1],vector1d,vector2d,voidf,filename,dist_crit,dr));
+                analysis.push_back(new ANALYSIS_CONTACT_ANGLE(system,sels[groupid],vector1d,vector2d,voidf,filename,zshift,dr,zlower,every_n_frame));
 
 
 

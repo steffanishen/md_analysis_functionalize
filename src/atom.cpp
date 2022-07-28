@@ -38,6 +38,8 @@ int ATOM::string_comp(vector<string> str) {
         flag = string_comp_atom_index(str);
     } else if (str[0] == "segid") {
         flag = string_comp_segid(str);
+    } else if (str[0] == "segname") {
+        flag = string_comp_segname(str);
     } else if (str[0] == "resid") {
         flag = string_comp_resid(str);
     } else if (str[0] == "resname") {
@@ -190,6 +192,21 @@ int ATOM::string_comp_resname(vector<string> str) {
     return flag;
 }
 
+
+int ATOM::string_comp_segname(vector<string> str) {
+
+    int flag = 0;
+
+
+    if (str[0] == "segname") {
+        for (unsigned i = 1; i < str.size(); i++) {
+            if (segname == str[i]) flag = 1;
+      }
+    } else {
+        error_exit ("Error calling string_comp_segname()!! ");
+    }
+    return flag;
+}
 
 int ATOM::string_comp_atomname(vector<string> str) {
 

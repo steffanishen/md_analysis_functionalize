@@ -45,6 +45,8 @@ public:
 //    GROUP *sel1;
  //   int whichN;
     //
+    int iframe;
+
     ANALYSIS_MSD(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, int dtmax); //constructor
     
     void init();

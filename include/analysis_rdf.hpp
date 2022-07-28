@@ -45,6 +45,8 @@ public:
 //    GROUP *sel1;
  //   int whichN;
     //
+    int iframe;
+
     ANALYSIS_RDF(PSF *system, GROUP *sel1, GROUP *sel2, int vector1d, int vector2d, int voidf, string filename, float dist_crit, float dr); //constructor
     
     void init();

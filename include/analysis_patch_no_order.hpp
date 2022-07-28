@@ -46,6 +46,8 @@ public:
 //    GROUP *sel1;
  //   int whichN;
     //
+    int iframe;
+
     int nclusters = 0;
     int nchains = 0;
     int nresidues = 0;

@@ -155,10 +155,12 @@ int main(int argc, char* argv[])
     t = clock();
 
 /////////////////////////////////////////////////Initialization of analysis objects goes here!//////////////////////
+    cout << "before assigning pointers" << endl; // Meng debug
     ANALYSIS_POINTERS ana_pointers(&sys,psels,&input,monomers);
     vector<ANALYSIS*> analysis = ana_pointers.init(); 
 
 
+    cout << "before assigning files" << endl; // Meng debug
     vector<ofstream*> files;    
 
     for (int compID = 0; compID < analysis.size() ; compID++) {
@@ -203,6 +205,7 @@ int main(int argc, char* argv[])
 
 
 ///////////////// Analysis, will work on mapping this later///////////////////////////////
+
 
 //////////////////// We save output for 2D vectors for later ///////////////////////////
             for (int compID = 0; compID < analysis.size() ; compID++) {

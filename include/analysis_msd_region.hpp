@@ -45,6 +45,8 @@ public:
 //    GROUP *sel1;
  //   int whichN;
     //
+    int iframe;
+
     ANALYSIS_MSD_REGION(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, int dtmax,int msd_xflag,int msd_yflag,int msd_zflag,float low,float high); //constructor
     
     void init();
