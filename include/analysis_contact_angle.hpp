@@ -60,10 +60,12 @@ public:
     float density_bulk = 0.0;
     
     ofstream *file_temp = new ofstream ("contour.dat");
+    ofstream *contact_angle_file;
 
     vector<vector<float>> density_yz;
+    string contact_angle_filename;
 
-    ANALYSIS_CONTACT_ANGLE(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, float zshift, float dr, float zlower, int every_n_frame); //constructor
+    ANALYSIS_CONTACT_ANGLE(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, string contact_angle_filename, float zshift, float dr, float zlower, int every_n_frame); //constructor
     
     void init();
 

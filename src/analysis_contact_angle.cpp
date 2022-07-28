@@ -38,7 +38,7 @@
 
 using namespace std;
 
-ANALYSIS_CONTACT_ANGLE::ANALYSIS_CONTACT_ANGLE(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, float zshift, float dr, float zlower, int every_n_frame)
+ANALYSIS_CONTACT_ANGLE::ANALYSIS_CONTACT_ANGLE(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, string contact_angle_filename, float zshift, float dr, float zlower, int every_n_frame)
 {
     this->system = system;
     this->sel1 = sel1;
@@ -47,6 +47,8 @@ ANALYSIS_CONTACT_ANGLE::ANALYSIS_CONTACT_ANGLE(PSF *system, GROUP *sel1, int vec
     this->vector2d = vector2d;
     this->voidf = voidf;
     this->filename = filename;
+    this->contact_angle_filename = contact_angle_filename;
+    contact_angle_file = new ofstream (contact_angle_filename.c_str());
     this->dr = dr;
     this->zlower = zlower;
     this->iframe = 0;
@@ -85,16 +87,16 @@ void ANALYSIS_CONTACT_ANGLE::polyfit(	const std::vector<double> &t,	const std::v
 	}
 	//std::cout<<T<<std::endl;
 
-    Tp = T.transpose();
-    T2 = Tp*T;
-
-    Vp = Tp*V;
-	
 	// Solve for linear least square fit
-	//result  = T.householderQr().solve(V);
+//    Tp = T.transpose();
+//    T2 = Tp*T;
+
+//    Vp = Tp*V;
+	
+	result  = T.householderQr().solve(V);
 	//result  = T2.householderQr().solve(Vp);
 
-    result = T2.inverse()*Vp;
+ //   result = T2.inverse()*Vp;
     cout << "size_of_result: " << result.size() << endl;
 
 
@@ -341,6 +343,8 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
         this->nframes = 0;
         this->density_yz.resize(this->ybins,vector<float>(this->zbins,0.0));
         this->density_bulk = 0.0;
+
+        *contact_angle_file << float(this->iframe) << " " << this->contact_angle << endl;
 
     } 
 
