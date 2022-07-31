@@ -252,6 +252,7 @@ vector<ANALYSIS*> ANALYSIS_POINTERS::init() {
                 float dr;
                 int every_n_frame;
                 string contact_angle_filename;
+                string fitting_function;
                 for (int argid = 1; argid < analysis_opt.size(); argid++) {
                     if (analysis_opt[argid] == "group") {
                         groupid = stoi(analysis_opt[argid+1]);
@@ -273,9 +274,11 @@ vector<ANALYSIS*> ANALYSIS_POINTERS::init() {
                         dr = stof(analysis_opt[argid+1]);
                     }  else if (analysis_opt[argid] == "every_n_frame") {
                         every_n_frame = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "fitting_function") {
+                        fitting_function = analysis_opt[argid+1];
                     }
                 }
-                analysis.push_back(new ANALYSIS_CONTACT_ANGLE(system,sels[groupid],vector1d,vector2d,voidf,filename,contact_angle_filename,zshift,dr,zlower,every_n_frame));
+                analysis.push_back(new ANALYSIS_CONTACT_ANGLE(system,sels[groupid],vector1d,vector2d,voidf,filename,contact_angle_filename,zshift,dr,zlower,fitting_function,every_n_frame));
 
 
 

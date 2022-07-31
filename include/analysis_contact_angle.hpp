@@ -56,6 +56,7 @@ public:
     int nframes;
 
     int iframe;
+    float z_com_frames = 0.0;
 
     float density_bulk = 0.0;
     
@@ -64,8 +65,9 @@ public:
 
     vector<vector<float>> density_yz;
     string contact_angle_filename;
+    string fitting_function;
 
-    ANALYSIS_CONTACT_ANGLE(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, string contact_angle_filename, float zshift, float dr, float zlower, int every_n_frame); //constructor
+    ANALYSIS_CONTACT_ANGLE(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, string contact_angle_filename, float zshift, float dr, float zlower, string fitting_function, int every_n_frame); //constructor
     
     void init();
 

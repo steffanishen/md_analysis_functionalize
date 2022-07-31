@@ -38,7 +38,7 @@
 
 using namespace std;
 
-ANALYSIS_CONTACT_ANGLE::ANALYSIS_CONTACT_ANGLE(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, string contact_angle_filename, float zshift, float dr, float zlower, int every_n_frame)
+ANALYSIS_CONTACT_ANGLE::ANALYSIS_CONTACT_ANGLE(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, string contact_angle_filename, float zshift, float dr, float zlower, string fitting_function, int every_n_frame)
 {
     this->system = system;
     this->sel1 = sel1;
@@ -55,7 +55,7 @@ ANALYSIS_CONTACT_ANGLE::ANALYSIS_CONTACT_ANGLE(PSF *system, GROUP *sel1, int vec
 
     this->zshift = -zshift;
 
-
+    this->fitting_function = fitting_function;
     this->every_n_frame = every_n_frame;
     this->nframes = 0;
 }
@@ -227,7 +227,11 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
 
 
     float y_com = accumulate(begin(ytemp), end(ytemp), 0.0);
+    float z_com = accumulate(begin(ztemp), end(ztemp), 0.0);
     y_com = y_com / float(ytemp.size());
+    z_com = z_com / float(ztemp.size());
+
+    this->z_com_frames += z_com;
 
 
     for (int i=0; i<ytemp.size(); i++) {
@@ -247,6 +251,7 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
     if (this->iframe % this->every_n_frame == 0 ) {
 
         this->density_bulk /= (volume_bulk * float(this->every_n_frame));
+        this->z_com_frames /= float(this->every_n_frame);
 
         for (int iybin=0; iybin < this->ybins; iybin++) {
             for (int izbin=0; izbin < this->zbins; izbin++) {
@@ -279,34 +284,66 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
             *file_temp << endl;
 
             vector<double> y_contour_points2(y_contour_points.size());
+            vector<double> z_contour_points2(z_contour_points.size());
             for (int icontour = 0; icontour < y_contour_points.size(); icontour++) {
 	            y_contour_points2[icontour] = y_contour_points[icontour]*y_contour_points[icontour]; 
+	            z_contour_points2[icontour] = z_contour_points[icontour]*z_contour_points[icontour]; 
 	        }
 
-        std::vector<double> coeff;
-	    polyfit(z_contour_points, y_contour_points2, coeff, 2);
-
-
-        cout << "coeffs: ";
-        for (int icoeff = 0; icoeff < coeff.size(); icoeff++) {
-            cout << coeff[icoeff] << " ";
-        }
-        cout << endl;
-
+        int fitting_order;
 
         double small_double = 0.00000001;
+        std::vector<double> coeff_temp;
+        std::vector<double> coeff;
 
-        if (coeff[0]>-small_double && coeff[0] < small_double ) {
-            error1.error_exit("coeff0 is 0!"); 
+        if (this->fitting_function == "ellipse") {
+
+            fitting_order = 2;
+	        polyfit(z_contour_points, y_contour_points2, coeff_temp, fitting_order);
+            coeff.resize(fitting_order+1);
+
+            if (coeff_temp[0]>-small_double && coeff_temp[0] < small_double ) {
+                error1.error_exit("coeff0 is 0!"); 
+            }
+
+            for (int icoeff = 1; icoeff < coeff_temp.size(); icoeff++) {
+                coeff[icoeff] = -coeff_temp[icoeff] / coeff_temp[0];
+            //coeff[icoeff] /= -coeff[0];
+            }
+
+        } else if (this->fitting_function == "sphere") {
+            vector<double> y2_plus_z2 = vector_sum(y_contour_points2, z_contour_points2);
+            //vector<double> y2_plus_z2 =  y_contour_points2 + z_contour_points2; 
+            fitting_order = 1;
+	        polyfit(z_contour_points, y2_plus_z2, coeff_temp, fitting_order);
+            coeff.resize(fitting_order+2);
+
+            if (coeff_temp[0]>-small_double && coeff_temp[0] < small_double ) {
+                error1.error_exit("coeff0 is 0!"); 
+            }
+
+            for (int icoeff = 1; icoeff < coeff_temp.size(); icoeff++) {
+                coeff[icoeff] = -coeff_temp[icoeff] / coeff_temp[0];
+            //coeff[icoeff] /= -coeff[0];
+            }
+            coeff[2] = 1.0/coeff_temp[0];
+
+        } else {
+            error1.error_exit("please specify the fitting_function. Options: 1. ellipse; 2. sphere");
         }
 
-        for (int icoeff = 1; icoeff < coeff.size(); icoeff++) {
-            coeff[icoeff] /= -coeff[0];
-        }
-        coeff[0] = 1.0/ coeff[0]; 
+        coeff[0] = 1.0/ coeff_temp[0]; 
      //   float swap_coeff = coeff[1];
      //   coeff[1] = coeff[2];
      //   coeff[2] = swap_coeff;
+
+
+
+        cout << "coeffs linear: ";
+        for (int icoeff = 0; icoeff < coeff_temp.size(); icoeff++) {
+            cout << coeff_temp[icoeff] << " ";
+        }
+        cout << endl;
 
         cout << "coeffs: ";
         for (int icoeff = 0; icoeff < coeff.size(); icoeff++) {
@@ -344,7 +381,9 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
         this->density_yz.resize(this->ybins,vector<float>(this->zbins,0.0));
         this->density_bulk = 0.0;
 
-        *contact_angle_file << float(this->iframe) << " " << this->contact_angle << endl;
+        //*contact_angle_file << float(this->iframe) << " " << this->contact_angle << " " << this->z_com_frames << endl;
+        *contact_angle_file << float(this->iframe) << " " << this->contact_angle << " " << z_com << endl;
+        this->z_com_frames = 0.0;
 
     } 
 
@@ -377,6 +416,7 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
 
     frame_angle.push_back(float(this->iframe));
     frame_angle.push_back(this->contact_angle);
+    frame_angle.push_back(z_com);
 
     return frame_angle;
 }

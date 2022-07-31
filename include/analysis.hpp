@@ -26,6 +26,8 @@
 #include "error1.hpp"
 #include "quarternion.hpp"
 #include <cmath>
+#include <algorithm>
+#include <functional>
 #ifndef ANALYSIS_HPP
 #define	ANALYSIS_HPP
 
@@ -108,6 +110,7 @@ public:
     vector<float> cross_product(vector<float> v1,vector<float> v2);
     vector<float> scalar_product(vector<float> v1, float scalar1);
     vector<float> vector_sum(vector<float> v1, vector<float> v2);
+    vector<double> vector_sum(vector<double> v1, vector<double> v2);
     vector<float> vector_subtract(vector<float> v1, vector<float> v2);
     vector<float> vector_quarternion_prod(vector<float> v1, QUARTERNION q);
     vector<float> rotate(vector<float> v1, float theta, vector<float> s);
@@ -136,6 +139,20 @@ public:
         }
         return vec2;
     }
+
+    template <typename T>
+    std::vector<T> vector_add(const std::vector<T>& a, const std::vector<T>& b)
+    {
+        assert(a.size() == b.size());
+
+        std::vector<T> result;
+        result.reserve(a.size());
+
+        std::transform(a.begin(), a.end(), b.begin(), 
+        std::back_inserter(result), std::plus<T>());
+        return result;
+    }
+
 
     void residue_rotate_reset(vector<float> vec_CC, int ind_pivot, vector<float> vec_ref, int residueid);
     void residue_rotate_random(int ind1, int ind2, int ind_pivot, float theta, int residueid, int ind_a4_pre, int ind_a2);

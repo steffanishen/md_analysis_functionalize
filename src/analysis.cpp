@@ -132,6 +132,15 @@ vector<float> ANALYSIS::vector_sum(vector<float> v1, vector<float> v2) {
     return v3;
 }
 
+vector<double> ANALYSIS::vector_sum(vector<double> v1, vector<double> v2) {
+    vector<double> v3(v1.size());
+    for (int i = 0; i < v1.size(); i++) {
+	v3[i] = v1[i] + v2[i];
+    }
+    return v3;
+}
+
+
 vector<float> ANALYSIS::vector_subtract(vector<float> v1, vector<float> v2) {
     vector<float> v3(v1.size());
     for (int i = 0; i < v1.size(); i++) {
