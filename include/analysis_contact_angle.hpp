@@ -61,7 +61,9 @@ public:
     float density_bulk = 0.0;
     
     ofstream *file_temp = new ofstream ("contour.dat");
+    ofstream *file_contour_last = new ofstream ("contour_last.dat");
     ofstream *contact_angle_file;
+    ofstream *density_file = new ofstream("density_2D.dat");
 
     vector<vector<float>> density_yz;
     string contact_angle_filename;
@@ -76,6 +78,8 @@ public:
     vector<float> find_ellipse_y(vector<float> xan, vector<double> coeffs);
     vector<float> find_ellipse_y_neg(vector<float> xan, vector<double> coeffs);
     vector<float> find_parabola_y(vector<float> xan, vector<double> coeffs);
+    void output_density(vector<vector<float>> density_yz);
+    void output_contour(vector<double> y_contour, vector<double> z_contour);
 
     void polyfit(	const std::vector<double> &t, const std::vector<double> &v, std::vector<double> &coeff,	int order);
 

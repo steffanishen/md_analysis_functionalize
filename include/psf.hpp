@@ -42,6 +42,7 @@ public:
     char *TITLE; //each "title line"
     
     /*content of ICNTRL : non detailed ones are 0 */
+    int nframes_tot;
     
     int NATOM; // Number of atoms
     int NBONDS; // Number of bonds

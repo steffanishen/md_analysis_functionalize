@@ -135,15 +135,20 @@ int main(int argc, char* argv[])
     vector<DCD_R*> dcdfs;
 
     int dcdcount = 0;
+    int framecount = 0;
+    int nframes_temp;
     for (string dcdname : input.dcdnames) {
 	dcdfs.push_back(new DCD_R(dcdname,&sys));//MS changed: the first argument specifies the dcd file name. Note this dcdf is a DCD_R object, while dcdf in dcdr.hpp is a fstream object.
         dcdfs[dcdcount]->read_header();
         cout << "finished reading dcd header of " << dcdname << endl;
         dcdfs[dcdcount]->printHeader();
-        cout << "Number of frames: " << dcdfs[dcdcount]->getNFILE() << endl;
+        nframes_temp = dcdfs[dcdcount]->getNFILE(); 
+        cout << "Number of frames: " << nframes_temp << endl;
         dcdcount++;
+        framecount += nframes_temp; 
     }
 
+    sys.nframes_tot = framecount;
 
     FILE * outfile_box; 
     outfile_box = fopen("box.dat","w");

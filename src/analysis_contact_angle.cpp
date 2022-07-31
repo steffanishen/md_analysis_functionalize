@@ -165,6 +165,28 @@ vector<float> ANALYSIS_CONTACT_ANGLE::find_parabola_y(vector<float> xan, vector<
 }
 
 
+void ANALYSIS_CONTACT_ANGLE::output_density(vector<vector<float>> density_yz) {
+    for (int iybin=0; iybin < this->ybins; iybin++) {
+        for (int izbin=0; izbin < this->zbins; izbin++) {
+            float y_contour = this->dr * float(iybin) - this->yshift;
+            float z_contour = this->dr * float(izbin) - this->zshift;
+            if (density_yz[iybin][izbin]) *this->density_file << y_contour << " " << z_contour << " " << density_yz[iybin][izbin] * this->every_n_frame << endl;
+        }
+    }
+}
+
+void ANALYSIS_CONTACT_ANGLE::output_contour(vector<double> y_contour_points, vector<double> z_contour_points) {
+            for (int icontour = 0; icontour < y_contour_points.size(); icontour++) {
+	            *file_contour_last << y_contour_points[icontour] << " ";
+	        }
+            *file_contour_last << endl;
+
+            for (int icontour = 0; icontour < z_contour_points.size(); icontour++) {
+	            *file_contour_last << z_contour_points[icontour] << " ";
+	        }
+            *file_contour_last << endl;
+}
+
 
 
 vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
@@ -269,6 +291,13 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
             }
         }
 
+        if (this->iframe == this->every_n_frame * (system->nframes_tot/this->every_n_frame)) {
+            output_density(density_yz);
+            output_contour(y_contour_points, z_contour_points);
+        }
+
+        cout << "this->iframe: " << this->iframe << " " <<  this->every_n_frame * (system->nframes_tot/this->every_n_frame) << endl; 
+        //output_density(density_yz);
 
         cout << "remainder: " << this->iframe % this->every_n_frame << " npoints:" << y_contour_points.size() << " bulk_density: " << density_bulk << endl; 
            // cout << "y_com: " << y_com << " npoints: " << y_contour_points.size() << endl; //Meng debug
@@ -428,5 +457,6 @@ ANALYSIS_CONTACT_ANGLE::~ANALYSIS_CONTACT_ANGLE()
     sel1 = NULL;
     sel2 = NULL;
     this->density_yz.clear();
+    this->density_file->close();
 }
 
