@@ -325,96 +325,100 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
         std::vector<double> coeff_temp;
         std::vector<double> coeff;
 
-        if (this->fitting_function == "ellipse") {
+        int order_general = 3;
 
-            fitting_order = 2;
-	        polyfit(z_contour_points, y_contour_points2, coeff_temp, fitting_order);
-            coeff.resize(fitting_order+1);
+        if (z_contour_points.size() >= order_general) {
 
-            if (coeff_temp[0]>-small_double && coeff_temp[0] < small_double ) {
-                error1.error_exit("coeff0 is 0!"); 
-            }
+            if (this->fitting_function == "ellipse") {
 
-            for (int icoeff = 1; icoeff < coeff_temp.size(); icoeff++) {
-                coeff[icoeff] = -coeff_temp[icoeff] / coeff_temp[0];
+                fitting_order = 2;
+	            polyfit(z_contour_points, y_contour_points2, coeff_temp, fitting_order);
+                coeff.resize(fitting_order+1);
+
+                if (coeff_temp[0]>-small_double && coeff_temp[0] < small_double ) {
+                    error1.error_exit("coeff0 is 0!"); 
+                }
+
+                for (int icoeff = 1; icoeff < coeff_temp.size(); icoeff++) {
+                    coeff[icoeff] = -coeff_temp[icoeff] / coeff_temp[0];
             //coeff[icoeff] /= -coeff[0];
+                }
+
+            } else if (this->fitting_function == "sphere") {
+                vector<double> y2_plus_z2 = vector_sum(y_contour_points2, z_contour_points2);
+                //vector<double> y2_plus_z2 =  y_contour_points2 + z_contour_points2; 
+                fitting_order = 1;
+	            polyfit(z_contour_points, y2_plus_z2, coeff_temp, fitting_order);
+                coeff.resize(fitting_order+2);
+
+                if (coeff_temp[0]>-small_double && coeff_temp[0] < small_double ) {
+                    error1.error_exit("coeff0 is 0!"); 
+                }
+
+                for (int icoeff = 1; icoeff < coeff_temp.size(); icoeff++) {
+                    coeff[icoeff] = -coeff_temp[icoeff] / coeff_temp[0];
+                //coeff[icoeff] /= -coeff[0];
+                }
+                coeff[2] = 1.0/coeff_temp[0];
+
+            } else {
+                error1.error_exit("please specify the fitting_function. Options: 1. ellipse; 2. sphere");
             }
 
-        } else if (this->fitting_function == "sphere") {
-            vector<double> y2_plus_z2 = vector_sum(y_contour_points2, z_contour_points2);
-            //vector<double> y2_plus_z2 =  y_contour_points2 + z_contour_points2; 
-            fitting_order = 1;
-	        polyfit(z_contour_points, y2_plus_z2, coeff_temp, fitting_order);
-            coeff.resize(fitting_order+2);
-
-            if (coeff_temp[0]>-small_double && coeff_temp[0] < small_double ) {
-                error1.error_exit("coeff0 is 0!"); 
-            }
-
-            for (int icoeff = 1; icoeff < coeff_temp.size(); icoeff++) {
-                coeff[icoeff] = -coeff_temp[icoeff] / coeff_temp[0];
-            //coeff[icoeff] /= -coeff[0];
-            }
-            coeff[2] = 1.0/coeff_temp[0];
-
-        } else {
-            error1.error_exit("please specify the fitting_function. Options: 1. ellipse; 2. sphere");
-        }
-
-        coeff[0] = 1.0/ coeff_temp[0]; 
+            coeff[0] = 1.0/ coeff_temp[0]; 
      //   float swap_coeff = coeff[1];
      //   coeff[1] = coeff[2];
      //   coeff[2] = swap_coeff;
 
 
 
-        cout << "coeffs linear: ";
-        for (int icoeff = 0; icoeff < coeff_temp.size(); icoeff++) {
-            cout << coeff_temp[icoeff] << " ";
-        }
-        cout << endl;
+            cout << "coeffs linear: ";
+            for (int icoeff = 0; icoeff < coeff_temp.size(); icoeff++) {
+                cout << coeff_temp[icoeff] << " ";
+            }
+            cout << endl;
 
-        cout << "coeffs: ";
-        for (int icoeff = 0; icoeff < coeff.size(); icoeff++) {
-            cout << coeff[icoeff] << " ";
-        }
-        cout << endl;
+            cout << "coeffs: ";
+            for (int icoeff = 0; icoeff < coeff.size(); icoeff++) {
+                cout << coeff[icoeff] << " ";
+            }
+            cout << endl;
 
-        float yan = -find_ellipse_x(-this->zshift,coeff);
-      //  float inside_sq = sqrt((1.0 + coeff[1]*coeff[1]*0.25/coeff[2])/coeff[0]);
+            float yan = -find_ellipse_x(-this->zshift,coeff);
+          //  float inside_sq = sqrt((1.0 + coeff[1]*coeff[1]*0.25/coeff[2])/coeff[0]);
 
-      //  cout << "yan: " << yan << " inside_sq: " << inside_sq << endl;
+          //  cout << "yan: " << yan << " inside_sq: " << inside_sq << endl;
 
-        vector<float> yan_array = this->linspace(yan,-yan,0.1);
-        vector<float> zan_array(yan_array.size());
+            vector<float> yan_array = this->linspace(yan,-yan,0.1);
+            vector<float> zan_array(yan_array.size());
 
-        cout << "yan_size: " << yan_array.size() <<  " first_yan_array: "<< yan_array[0] << endl;
+            cout << "yan_size: " << yan_array.size() <<  " first_yan_array: "<< yan_array[0] << endl;
 
-        if (coeff[0] > 0.0 && coeff[2] > 0.0 ) {
-            cout << "A>0, B>0" << endl;
-            zan_array = find_ellipse_y(yan_array,coeff);
-        } else if (coeff[0] > 0.0 && coeff[2] < 0.0) {
-            cout << "A>0, B<0" << endl;
-            zan_array = find_parabola_y(yan_array,coeff);
-        }
+            if (coeff[0] > 0.0 && coeff[2] > 0.0 ) {
+                cout << "A>0, B>0" << endl;
+                zan_array = find_ellipse_y(yan_array,coeff);
+            } else if (coeff[0] > 0.0 && coeff[2] < 0.0) {
+                cout << "A>0, B<0" << endl;
+                zan_array = find_parabola_y(yan_array,coeff);
+            }
 
-        float slope = (zan_array[1] - zan_array[0] )/(yan_array[1] - yan_array[0] );
+            float slope = (zan_array[1] - zan_array[0] )/(yan_array[1] - yan_array[0] );
 
-        this->contact_angle = atan(slope) * 180.0 / PI;
+            this->contact_angle = atan(slope) * 180.0 / PI;
 
-        if (coeff[0] > 0.0 && coeff[2] > 0.0 && coeff[1] < 0.0 ) {
-            this->contact_angle = 180.0 - this->contact_angle;
-        }
+            if (coeff[0] > 0.0 && coeff[2] > 0.0 && coeff[1] < 0.0 ) {
+                this->contact_angle = 180.0 - this->contact_angle;
+            }
 
-        this->nframes = 0;
-        this->density_yz.resize(this->ybins,vector<float>(this->zbins,0.0));
-        this->density_bulk = 0.0;
+            this->nframes = 0;
+            this->density_yz.resize(this->ybins,vector<float>(this->zbins,0.0));
+            this->density_bulk = 0.0;
 
-        //*contact_angle_file << float(this->iframe) << " " << this->contact_angle << " " << this->z_com_frames << endl;
-        *contact_angle_file << float(this->iframe) << " " << this->contact_angle << " " << z_com << endl;
-        this->z_com_frames = 0.0;
+            //*contact_angle_file << float(this->iframe) << " " << this->contact_angle << " " << this->z_com_frames << endl;
+            *contact_angle_file << float(this->iframe) << " " << this->contact_angle << " " << z_com << endl;
+            this->z_com_frames = 0.0;
 
-    } 
+        } 
 
 /*
     //fitting benchmark begin
@@ -443,9 +447,10 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
 */
 
 
-    frame_angle.push_back(float(this->iframe));
-    frame_angle.push_back(this->contact_angle);
-    frame_angle.push_back(z_com);
+        frame_angle.push_back(float(this->iframe));
+        frame_angle.push_back(this->contact_angle);
+        frame_angle.push_back(z_com);
+    }
 
     return frame_angle;
 }

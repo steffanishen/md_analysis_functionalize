@@ -59,6 +59,7 @@ public:
     float z_com_frames = 0.0;
 
     float density_bulk = 0.0;
+    //vector<double> coeff;
     
     ofstream *file_temp = new ofstream ("contour.dat");
     ofstream *file_contour_last = new ofstream ("contour_last.dat");
