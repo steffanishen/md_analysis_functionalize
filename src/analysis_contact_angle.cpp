@@ -170,7 +170,7 @@ void ANALYSIS_CONTACT_ANGLE::output_density(vector<vector<float>> density_yz) {
         for (int izbin=0; izbin < this->zbins; izbin++) {
             float y_contour = this->dr * float(iybin) - this->yshift;
             float z_contour = this->dr * float(izbin) - this->zshift;
-            if (density_yz[iybin][izbin]) *this->density_file << y_contour << " " << z_contour << " " << density_yz[iybin][izbin] * this->every_n_frame << endl;
+            if (density_yz[iybin][izbin] > 0.1*this->density_bulk) *this->density_file << y_contour << " " << z_contour << " " << density_yz[iybin][izbin] * this->every_n_frame << endl;
         }
     }
 }
@@ -279,7 +279,7 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
             for (int izbin=0; izbin < this->zbins; izbin++) {
                 this->density_yz[iybin][izbin] /= ( this->dr * this->dr * float(this->every_n_frame) );
                 float current_dens = this->density_yz[iybin][izbin]; 
-                if (current_dens > 0.1*this->density_bulk && current_dens < 0.2*this->density_bulk) {
+                if (current_dens > 0.05*this->density_bulk && current_dens < 0.1*this->density_bulk) {
                     float y_contour = this->dr * float(iybin) - yshift;
                     float z_contour = this->dr * float(izbin) - zshift;
                     if (z_contour > this->zlower) {
