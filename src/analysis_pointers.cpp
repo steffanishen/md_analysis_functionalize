@@ -167,6 +167,38 @@ vector<ANALYSIS*> ANALYSIS_POINTERS::init() {
 		    }
 		}
         	analysis.push_back(new ANALYSIS_DENSITY_PROFILE(system,sels[groupid],vector1d,vector2d,voidf,filename,nbins,which_density_profile));
+
+        } else if (analysis_opt[0] == "density_profile_droplet") {
+		    int groupid;
+	 	    int whichN;
+            float zshift;
+            float dr;
+            int nbins;
+            string which_density_profile;
+		for (int argid = 1; argid < analysis_opt.size(); argid++) {
+		    if (analysis_opt[argid] == "group") {
+			groupid = stoi(analysis_opt[argid+1]);
+		    }  else if (analysis_opt[argid] == "vector1d") {
+			vector1d = stoi(analysis_opt[argid+1]);
+		    }  else if (analysis_opt[argid] == "vector2d") {
+			vector2d = stoi(analysis_opt[argid+1]);
+		    }  else if (analysis_opt[argid] == "voidf") {
+			voidf = stoi(analysis_opt[argid+1]);
+		    }  else if (analysis_opt[argid] == "filename") {
+			filename = analysis_opt[argid+1];
+		    }  else if (analysis_opt[argid] == "nbins") {
+			nbins = stoi(analysis_opt[argid+1]);
+		    }  else if (analysis_opt[argid] == "which_density_profile") {
+			which_density_profile = analysis_opt[argid+1];
+		    }  else if (analysis_opt[argid] == "zshift") {
+			zshift = stof(analysis_opt[argid+1]);
+		    }  else if (analysis_opt[argid] == "dr") {
+			dr = stof(analysis_opt[argid+1]);
+		    }
+		}
+        	analysis.push_back(new ANALYSIS_DENSITY_PROFILE_DROPLET(system,sels[groupid],vector1d,vector2d,voidf,filename,nbins,which_density_profile,zshift,dr));
+
+
         } else if (analysis_opt[0] == "nshell") {
 		int groupid;
 		int groupid1;
@@ -279,6 +311,47 @@ vector<ANALYSIS*> ANALYSIS_POINTERS::init() {
                     }
                 }
                 analysis.push_back(new ANALYSIS_CONTACT_ANGLE(system,sels[groupid],vector1d,vector2d,voidf,filename,contact_angle_filename,zshift,dr,zlower,fitting_function,every_n_frame));
+
+
+        } else if (analysis_opt[0] == "contact_angle_density_profile") {
+                int groupid;
+                int groupid1;
+                int whichN;
+                float zshift;
+                float zlower;
+                float dr;
+                int every_n_frame;
+                string contact_angle_filename;
+                string fitting_function;
+                for (int argid = 1; argid < analysis_opt.size(); argid++) {
+                    if (analysis_opt[argid] == "group") {
+                        groupid = stoi(analysis_opt[argid+1]);
+                    } else if (analysis_opt[argid] == "group1") {
+                        groupid1 = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "vector1d") {
+                        vector1d = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "vector2d") {
+                        vector2d = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "voidf") {
+                        voidf = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "filename") {
+                        filename = analysis_opt[argid+1];
+                    }  else if (analysis_opt[argid] == "contact_angle_filename") {
+                        contact_angle_filename = analysis_opt[argid+1];
+                    }  else if (analysis_opt[argid] == "zshift") {
+                        zshift = stof(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "zlower") {
+                        zlower = stof(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "dr") {
+                        dr = stof(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "every_n_frame") {
+                        every_n_frame = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "fitting_function") {
+                        fitting_function = analysis_opt[argid+1];
+                    }
+                }
+                analysis.push_back(new ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE(system,sels[groupid],sels[groupid1],vector1d,vector2d,voidf,filename,contact_angle_filename,zshift,dr,zlower,fitting_function,every_n_frame));
+
 
 
 

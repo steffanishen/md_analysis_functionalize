@@ -32,17 +32,21 @@
 
 #include <math.h>
 #include "analysis_contact_angle.hpp"
+#include "analysis_contact_angle_density_profile.hpp"
 
 
 #define PI 3.14159265
 
 using namespace std;
 
-ANALYSIS_CONTACT_ANGLE::ANALYSIS_CONTACT_ANGLE(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, string contact_angle_filename, float zshift, float dr, float zlower, string fitting_function, int every_n_frame)
+ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE::ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE(PSF *system, GROUP *sel1, GROUP *sel2, int vector1d, int vector2d, int voidf, string filename, string contact_angle_filename, float zshift, float dr, float zlower, string fitting_function, int every_n_frame)
 {
+    cout << "test initializing droplet density profile: " << endl;
     this->system = system;
     this->sel1 = sel1;
     this->sel2 = sel2;
+
+
     this->vector1d = vector1d;
     this->vector2d = vector2d;
     this->voidf = voidf;
@@ -60,11 +64,11 @@ ANALYSIS_CONTACT_ANGLE::ANALYSIS_CONTACT_ANGLE(PSF *system, GROUP *sel1, int vec
     this->nframes = 0;
 }
 
-void ANALYSIS_CONTACT_ANGLE::init() {
+void ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE::init() {
 }
 
 
-void ANALYSIS_CONTACT_ANGLE::polyfit(	const std::vector<double> &t,	const std::vector<double> &v,	std::vector<double> &coeff,	int order)
+void ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE::polyfit(	const std::vector<double> &t,	const std::vector<double> &v,	std::vector<double> &coeff,	int order)
 {
 	// Create Matrix Placeholder of size n x k, n= number of datapoints, k = order of polynomial, for exame k = 3 for cubic polynomial
 	Eigen::MatrixXd T(t.size(), order + 1);
@@ -108,7 +112,7 @@ void ANALYSIS_CONTACT_ANGLE::polyfit(	const std::vector<double> &t,	const std::v
 
 }
 
-float ANALYSIS_CONTACT_ANGLE::find_ellipse_x(float yan, vector<double> coeffs) {
+float ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE::find_ellipse_x(float yan, vector<double> coeffs) {
     float xan;
 
     xan = sqrt((1.0 - coeffs[1]*yan -coeffs[2]*yan*yan)/coeffs[0]);
@@ -116,7 +120,7 @@ float ANALYSIS_CONTACT_ANGLE::find_ellipse_x(float yan, vector<double> coeffs) {
     return xan;
 }
 
-vector<float> ANALYSIS_CONTACT_ANGLE::find_ellipse_y(vector<float> xan, vector<double> coeffs) {
+vector<float> ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE::find_ellipse_y(vector<float> xan, vector<double> coeffs) {
     vector<float> yan_array(xan.size());
     double A = coeffs[0];
     double C = coeffs[1];
@@ -132,7 +136,7 @@ vector<float> ANALYSIS_CONTACT_ANGLE::find_ellipse_y(vector<float> xan, vector<d
     return yan_array;
 }
 
-vector<float> ANALYSIS_CONTACT_ANGLE::find_ellipse_y_neg(vector<float> xan, vector<double> coeffs) {
+vector<float> ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE::find_ellipse_y_neg(vector<float> xan, vector<double> coeffs) {
     vector<float> yan_array(xan.size());
     double A = coeffs[0];
     double C = coeffs[1];
@@ -146,7 +150,7 @@ vector<float> ANALYSIS_CONTACT_ANGLE::find_ellipse_y_neg(vector<float> xan, vect
 }
 
 
-vector<float> ANALYSIS_CONTACT_ANGLE::find_parabola_y(vector<float> xan, vector<double> coeffs) {
+vector<float> ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE::find_parabola_y(vector<float> xan, vector<double> coeffs) {
     vector<float> yan_array(xan.size());
     double A = coeffs[0];
     double C = coeffs[1];
@@ -165,17 +169,17 @@ vector<float> ANALYSIS_CONTACT_ANGLE::find_parabola_y(vector<float> xan, vector<
 }
 
 
-void ANALYSIS_CONTACT_ANGLE::output_density(vector<vector<float>> density_yz) {
+void ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE::output_density(vector<vector<float>> density_yz) {
     for (int iybin=0; iybin < this->ybins; iybin++) {
         for (int izbin=0; izbin < this->zbins; izbin++) {
-            float y_contour = this->dr * float(iybin) - this->yshift;
-            float z_contour = this->dr * float(izbin) - this->zshift;
-            if (density_yz[iybin][izbin] > 0.1*this->density_bulk) *this->density_file << y_contour << " " << z_contour << " " << density_yz[iybin][izbin] * this->every_n_frame << endl;
+            float y = this->dr * float(iybin) - this->yshift;
+            float z = this->dr * float(izbin) - this->zshift;
+            if (density_yz[iybin][izbin] > 0.1*this->density_bulk) *this->density_file << y << " " << z << " " << density_yz[iybin][izbin] * this->every_n_frame << endl;
         }
     }
 }
 
-void ANALYSIS_CONTACT_ANGLE::output_contour(vector<double> y_contour_points, vector<double> z_contour_points) {
+void ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE::output_contour(vector<double> y_contour_points, vector<double> z_contour_points) {
             for (int icontour = 0; icontour < y_contour_points.size(); icontour++) {
 	            *file_contour_last << y_contour_points[icontour] << " ";
 	        }
@@ -187,9 +191,39 @@ void ANALYSIS_CONTACT_ANGLE::output_contour(vector<double> y_contour_points, vec
             *file_contour_last << endl;
 }
 
+void ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE::output_density_solute(vector<vector<float>> density_yz_solute, vector<double> coeff) {
+    density_z_solute.clear();
+    density_z_solute.resize(this->zbins,0.0);
+
+    int izbinp;
+    float droplet_edge = 5.0;
+
+    float zshift_solute_density = 0.5 * system->box_first_frame[2];
+    for (int izbin=0; izbin < this->zbins; izbin++) {
+        float density_z = 0.0;
+        float npoints = 0.0;
+
+        izbinp = izbin + this->zbins/2 - int(this->zshift/this->dr);
+
+        for (int iybin=0; iybin < this->ybins; iybin++) {
+            float y = this->dr * float(iybin) - this->yshift;
+            float z = this->dr * float(izbin) - this->zshift;
+            //float z = this->dr * float(izbin) + zshift_solute_density;
+            if (density_yz[iybin][izbin] > 0.1*this->density_bulk) *this->density_file_solute << y << " " << z << " " << density_yz_solute[iybin][izbin] * this->every_n_frame << endl;
+
+            float yan = find_ellipse_x(z,coeff);
+
+            if (abs(y) < abs(yan) - droplet_edge) {
+                density_z_solute[izbinp] += density_yz_solute[iybin][izbin] / system->box_first_frame[0];
+                npoints += 1.0;
+            }
+        }
+        if (npoints >0.01) density_z_solute[izbinp] /= npoints / 1000.0;
+    }
+}
 
 
-vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
+vector<float> ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE::compute_vector() {
     float x,y,z;
     sel1->anglezs.clear();
     vector<float> r(3,0.0);
@@ -206,6 +240,8 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
     float dr = this->dr;
     vector<float> ytemp;
     vector<float> ztemp;
+    vector<float> ytemp_sel2;
+    vector<float> ztemp_sel2;
     this->iframe += 1;
     this->nframes += 1;
     float R_dense = 3.0;
@@ -217,6 +253,7 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
 
 
     if (sel1->NATOM == 0) error1.error_exit("ERROR: sel1 doesn't contain any atoms!");
+    if (sel2->NATOM == 0) error1.error_exit("ERROR: sel2 doesn't contain any atoms!");
 
     if (this->iframe == 1){
         vector<double> box;
@@ -229,6 +266,8 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
         this->ybins = int(box[1]/dr);
         this->zbins = int(box[2]/dr);
         this->density_yz.resize(this->ybins,vector<float>(this->zbins));
+        this->density_yz_solute.resize(this->ybins,vector<float>(this->zbins));
+        this->density_z_solute.resize(this->zbins);
     }
 
 
@@ -244,6 +283,21 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
 
         }
       }
+
+
+    for (auto &segment:sel2->segments_ind) {
+      for (int ind : segment) {
+	      x = system->x[ind];
+	      y = system->y[ind];
+          z = system->z[ind];
+        
+          ytemp_sel2.push_back(y);
+          ztemp_sel2.push_back(z);
+
+        }
+      }
+
+
 
 
 
@@ -269,6 +323,21 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
     }
 
 
+    for (int i=0; i<ytemp_sel2.size(); i++) {
+        y = ytemp_sel2[i];
+        z = ztemp_sel2[i];
+        iybin = int((y - y_com + yshift)/this->dr);
+        izbin = int((z + this->zshift)/this->dr);
+        if (izbin >=0 && izbin < this->zbins && iybin >=0 && iybin < ybins) {
+            density_yz_solute[iybin][izbin] += 1.0;
+            //if (z > -this->zshift && (z+zshift)*(z+zshift) + (y - y_com)*(y - y_com)< R_dense*R_dense ) {
+            //    this->density_bulk += 1.0;
+            //}
+        }
+    }
+
+
+
     if (this->iframe % this->every_n_frame == 0 ) {
 
         this->density_bulk /= (volume_bulk * float(this->every_n_frame));
@@ -276,7 +345,8 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
 
         for (int iybin=0; iybin < this->ybins; iybin++) {
             for (int izbin=0; izbin < this->zbins; izbin++) {
-                this->density_yz[iybin][izbin] /= ( this->dr * this->dr * float(this->every_n_frame) );
+                this->density_yz[iybin][izbin] /= ( this->dr * this->dr * float(this->every_n_frame ) );
+                this->density_yz_solute[iybin][izbin] /= ( this->dr * this->dr * float(this->every_n_frame ) );
                 float current_dens = this->density_yz[iybin][izbin]; 
                 if (current_dens > 0.05*this->density_bulk && current_dens < 0.1*this->density_bulk) {
                     float y_contour = this->dr * float(iybin) - yshift;
@@ -290,10 +360,6 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
             }
         }
 
-        if (this->iframe == this->every_n_frame * (system->nframes_tot/this->every_n_frame)) {
-            output_density(density_yz);
-            output_contour(y_contour_points, z_contour_points);
-        }
 
         cout << "this->iframe: " << this->iframe << " " <<  this->every_n_frame * (system->nframes_tot/this->every_n_frame) << endl; 
         //output_density(density_yz);
@@ -322,19 +388,17 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
 
         double small_double = 0.00000001;
         std::vector<double> coeff_temp;
-        std::vector<double> coeff;
 
         int order_general = 3;
 
         if (z_contour_points.size() >= order_general) {
-            
-            coeff.clear();
 
+            coeff.clear();
             if (this->fitting_function == "ellipse") {
 
                 fitting_order = 2;
 	            polyfit(z_contour_points, y_contour_points2, coeff_temp, fitting_order);
-                coeff.resize(fitting_order+1);
+                coeff.resize(fitting_order+1,0.0);
 
                 if (coeff_temp[0]>-small_double && coeff_temp[0] < small_double ) {
                     error1.error_exit("coeff0 is 0!"); 
@@ -350,7 +414,7 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
                 //vector<double> y2_plus_z2 =  y_contour_points2 + z_contour_points2; 
                 fitting_order = 1;
 	            polyfit(z_contour_points, y2_plus_z2, coeff_temp, fitting_order);
-                coeff.resize(fitting_order+2);
+                coeff.resize(fitting_order+2,0.0);
 
                 if (coeff_temp[0]>-small_double && coeff_temp[0] < small_double ) {
                     error1.error_exit("coeff0 is 0!"); 
@@ -413,11 +477,6 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
 
             this->nframes = 0;
 
-            this->density_yz.clear();
-
-            this->density_yz.resize(this->ybins,vector<float>(this->zbins,0.0));
-            this->density_bulk = 0.0;
-
             //*contact_angle_file << float(this->iframe) << " " << this->contact_angle << " " << this->z_com_frames << endl;
             *contact_angle_file << float(this->iframe) << " " << this->contact_angle << " " << z_com << endl;
             this->z_com_frames = 0.0;
@@ -449,18 +508,32 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
 // Fitting benchmark end
 
 */
+        if (this->iframe == this->every_n_frame * (system->nframes_tot/this->every_n_frame)) {
+            output_density(density_yz);
+            output_contour(y_contour_points, z_contour_points);
+        }
 
 
         frame_angle.push_back(float(this->iframe));
         frame_angle.push_back(this->contact_angle);
         frame_angle.push_back(z_com);
+
+        output_density_solute(density_yz_solute,this->coeff);
+
+        density_yz.clear();
+        density_yz_solute.clear();
+
+        this->density_yz.resize(this->ybins,vector<float>(this->zbins,0.0));
+        this->density_yz_solute.resize(this->ybins,vector<float>(this->zbins,0.0));
+        this->density_bulk = 0.0;
+
     }
 
-    return frame_angle;
+    return density_z_solute;
 }
 
 
-ANALYSIS_CONTACT_ANGLE::~ANALYSIS_CONTACT_ANGLE()
+ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE::~ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE()
 {
     system = NULL;
     sel1 = NULL;

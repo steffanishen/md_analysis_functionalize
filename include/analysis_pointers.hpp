@@ -32,6 +32,7 @@
 #include "analysis_rotate.hpp"
 #include "analysis_packing.hpp"
 #include "analysis_density_profile.hpp"
+#include "analysis_density_profile_droplet.hpp"
 #include "analysis_shell.hpp"
 #include "analysis_energy.hpp"
 #include "analysis_rdf.hpp"
@@ -42,6 +43,7 @@
 #include "analysis_msd.hpp"
 #include "analysis_msd_region.hpp"
 #include "analysis_contact_angle.hpp"
+#include "analysis_contact_angle_density_profile.hpp"
 #include "input.hpp"
 #ifndef ANALYSIS_POINTERS_HPP
 #define	ANALYSIS_POINTERS_HPP
