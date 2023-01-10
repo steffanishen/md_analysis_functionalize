@@ -213,12 +213,12 @@ void ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE::output_density_solute(vector<vector
 
             float yan = find_ellipse_x(z,coeff);
 
-            if (abs(y) < abs(yan) - droplet_edge) {
+            if (abs(y) < abs(yan) - droplet_edge && izbinp < this->zbins) {
                 density_z_solute[izbinp] += density_yz_solute[iybin][izbin] / system->box_first_frame[0];
                 npoints += 1.0;
             }
         }
-        if (npoints >0.01) density_z_solute[izbinp] /= npoints / 1000.0;
+        if (npoints >0.01 && izbinp < this->zbins) density_z_solute[izbinp] /= npoints / 1000.0;
     }
 }
 
@@ -539,6 +539,8 @@ ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE::~ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE(
     sel1 = NULL;
     sel2 = NULL;
     this->density_yz.clear();
+    this->density_yz_solute.clear();
+    this->density_z_solute.clear();
     this->density_file->close();
 }
 
