@@ -274,6 +274,46 @@ vector<ANALYSIS*> ANALYSIS_POINTERS::init() {
                     }
                 }
                 analysis.push_back(new ANALYSIS_RDF(system,sels[groupid],sels[groupid1],vector1d,vector2d,voidf,filename,dist_crit,dr));
+        } else if (analysis_opt[0] == "orientation") {
+                int groupid;
+                int groupid1;
+                int whichN;
+                float dist_crit;
+                int nbins;
+                string name0;
+                string name1;
+                string name2;
+                string name3;
+                for (int argid = 1; argid < analysis_opt.size(); argid++) {
+                    if (analysis_opt[argid] == "group") {
+                        groupid = stoi(analysis_opt[argid+1]);
+                    } else if (analysis_opt[argid] == "group1") {
+                        groupid1 = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "vector1d") {
+                        vector1d = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "vector2d") {
+                        vector2d = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "voidf") {
+                        voidf = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "filename") {
+                        filename = analysis_opt[argid+1];
+                    }  else if (analysis_opt[argid] == "name0") {
+                        name0 = analysis_opt[argid+1];
+                    }  else if (analysis_opt[argid] == "name1") {
+                        name1 = analysis_opt[argid+1];
+                    }  else if (analysis_opt[argid] == "name2") {
+                        name2 = analysis_opt[argid+1];
+                    }  else if (analysis_opt[argid] == "name3") {
+                        name3 = analysis_opt[argid+1];
+                    }  else if (analysis_opt[argid] == "nbins") {
+                        nbins = stoi(analysis_opt[argid+1]);
+                    }
+                }
+                analysis.push_back(new ANALYSIS_ORIENTATION(system,sels[groupid],vector1d,vector2d,voidf,filename,name0,name1,name2,name3,nbins));
+
+
+
+
 
         } else if (analysis_opt[0] == "contact_angle") {
                 int groupid;

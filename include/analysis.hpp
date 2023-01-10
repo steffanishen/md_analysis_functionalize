@@ -55,13 +55,13 @@ public:
     int nbinsangle;
     int nbins;
     int axisid;
-    float bl; // the length of the bond between adjacent monomers
-    string filename;
-    vector<vector<float>> danglezs; // the minimum dangle for every N of each of all the segments
     string name1;
     string name2;
     string name3;
     string name4;
+    float bl; // the length of the bond between adjacent monomers
+    string filename;
+    vector<vector<float>> danglezs; // the minimum dangle for every N of each of all the segments
     string name_ref1;
     string name_ref2;
     vector<float> count; 
