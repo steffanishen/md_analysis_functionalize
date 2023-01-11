@@ -1,4 +1,45 @@
-7c7
-< CXX_OPT= -std=c++0x -I "./include" -Wall -Wextra -O2
----
-> CXX_OPT= -std=c++0x -I "./include" -Wall -Wextra -O2 #-fopenmp
+include/analysis_orientation.hpp:    vector<vector<float>> density_yz;
+include/analysis_density_profile_droplet.hpp:    vector<vector<float>> density_yz;
+include/analysis_contact_angle.hpp:    vector<vector<float>> density_yz;
+include/analysis_contact_angle.hpp:    void output_density(vector<vector<float>> density_yz);
+include/analysis_contact_angle_density_profile.hpp:    vector<vector<float>> density_yz;
+include/analysis_contact_angle_density_profile.hpp:    vector<vector<float>> density_yz_solute;
+include/analysis_contact_angle_density_profile.hpp:    void output_density(vector<vector<float>> density_yz);
+include/analysis_contact_angle_density_profile.hpp:    void output_density_solute(vector<vector<float>> density_yz_solute,  vector<double> coeff);
+src/analysis_contact_angle_density_profile.cpp:void ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE::output_density(vector<vector<float>> density_yz) {
+src/analysis_contact_angle_density_profile.cpp:            if (density_yz[iybin][izbin] > 0.1*this->density_bulk) *this->density_file << y << " " << z << " " << density_yz[iybin][izbin] * this->every_n_frame << endl;
+src/analysis_contact_angle_density_profile.cpp:void ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE::output_density_solute(vector<vector<float>> density_yz_solute, vector<double> coeff) {
+src/analysis_contact_angle_density_profile.cpp:            if (density_yz[iybin][izbin] > 0.1*this->density_bulk) *this->density_file_solute << y << " " << z << " " << density_yz_solute[iybin][izbin] * this->every_n_frame << endl;
+src/analysis_contact_angle_density_profile.cpp:                density_z_solute[izbinp] += density_yz_solute[iybin][izbin] / system->box_first_frame[0];
+src/analysis_contact_angle_density_profile.cpp:        this->density_yz.resize(this->ybins,vector<float>(this->zbins));
+src/analysis_contact_angle_density_profile.cpp:        this->density_yz_solute.resize(this->ybins,vector<float>(this->zbins));
+src/analysis_contact_angle_density_profile.cpp:            density_yz[iybin][izbin] += 1.0;
+src/analysis_contact_angle_density_profile.cpp:            density_yz_solute[iybin][izbin] += 1.0;
+src/analysis_contact_angle_density_profile.cpp:                this->density_yz[iybin][izbin] /= ( this->dr * this->dr * float(this->every_n_frame ) );
+src/analysis_contact_angle_density_profile.cpp:                this->density_yz_solute[iybin][izbin] /= ( this->dr * this->dr * float(this->every_n_frame ) );
+src/analysis_contact_angle_density_profile.cpp:                float current_dens = this->density_yz[iybin][izbin]; 
+src/analysis_contact_angle_density_profile.cpp:        //output_density(density_yz);
+src/analysis_contact_angle_density_profile.cpp:            output_density(density_yz);
+src/analysis_contact_angle_density_profile.cpp:        output_density_solute(density_yz_solute,this->coeff);
+src/analysis_contact_angle_density_profile.cpp:        density_yz.clear();
+src/analysis_contact_angle_density_profile.cpp:        density_yz_solute.clear();
+src/analysis_contact_angle_density_profile.cpp:        this->density_yz.resize(this->ybins,vector<float>(this->zbins,0.0));
+src/analysis_contact_angle_density_profile.cpp:        this->density_yz_solute.resize(this->ybins,vector<float>(this->zbins,0.0));
+src/analysis_contact_angle_density_profile.cpp:    this->density_yz.clear();
+src/analysis_contact_angle_density_profile.cpp:    this->density_yz_solute.clear();
+src/analysis_orientation.cpp:void ANALYSIS_ORIENTATION::output_density(vector<vector<float>> density_yz) {
+src/analysis_orientation.cpp:            if (zcontour >  0.0) *this->density_file << z_contour << " " << theta_contour << " " << density_yz[iybin][izbin] * this->every_n_frame << endl;
+src/analysis_orientation.cpp:        this->density_yz.resize(this->nbins,vector<float>(this->thetabins));
+src/analysis_orientation.cpp:            density_yz[izbin][itheta]
+src/analysis_density_profile_droplet.cpp:            density_yz[iybin][izbin] += 1.0;
+src/analysis_contact_angle.cpp:void ANALYSIS_CONTACT_ANGLE::output_density(vector<vector<float>> density_yz) {
+src/analysis_contact_angle.cpp:            if (density_yz[iybin][izbin] > 0.1*this->density_bulk) *this->density_file << y_contour << " " << z_contour << " " << density_yz[iybin][izbin] * this->every_n_frame << endl;
+src/analysis_contact_angle.cpp:        this->density_yz.resize(this->ybins,vector<float>(this->zbins));
+src/analysis_contact_angle.cpp:            density_yz[iybin][izbin] += 1.0;
+src/analysis_contact_angle.cpp:                this->density_yz[iybin][izbin] /= ( this->dr * this->dr * float(this->every_n_frame) );
+src/analysis_contact_angle.cpp:                float current_dens = this->density_yz[iybin][izbin]; 
+src/analysis_contact_angle.cpp:            output_density(density_yz);
+src/analysis_contact_angle.cpp:        //output_density(density_yz);
+src/analysis_contact_angle.cpp:            this->density_yz.clear();
+src/analysis_contact_angle.cpp:            this->density_yz.resize(this->ybins,vector<float>(this->zbins,0.0));
+src/analysis_contact_angle.cpp:    this->density_yz.clear();

@@ -37,7 +37,7 @@
 
 using namespace std;
 
-ANALYSIS_ORIENTATION::ANALYSIS_ORIENTATION(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, string name0, string name1, string name2, string name3, int nbins)
+ANALYSIS_ORIENTATION::ANALYSIS_ORIENTATION(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, string name0, string name1, string name2, string name3, int nbins, int every_n_frame,float dtheta)
 {
     this->system = system;
     this->sel1 = sel1;
@@ -55,11 +55,23 @@ ANALYSIS_ORIENTATION::ANALYSIS_ORIENTATION(PSF *system, GROUP *sel1, int vector1
     this->rdf_count.resize(nbins);
     fill(this->rdf_count.begin(), this->rdf_count.end(),0.0);
     this->iframe = 0;
+    this->dtheta = dtheta;
+    this->every_n_frame = every_n_frame;
 
 
 }
 
 void ANALYSIS_ORIENTATION::init() {
+}
+
+void ANALYSIS_ORIENTATION::output_density(vector<vector<float>> density_yz) {
+    for (int izbin=0; izbin < this->nbins; izbin++) {
+        for (int ithetabin=0; ithetabin < this->thetabins; ithetabin++) {
+            float z_contour = this->dz * float(izbin) - this->zshift;
+            float theta_contour = this->dtheta * float(ithetabin);
+            if (z_contour >  0.0) *this->density_file << z_contour << " " << theta_contour << " " << density_yz[izbin][ithetabin] << endl;
+        }
+    }
 }
 
 vector<float> ANALYSIS_ORIENTATION::compute_vector() {
@@ -83,9 +95,14 @@ vector<float> ANALYSIS_ORIENTATION::compute_vector() {
     float costheta = 0.0;
     vector<double> box;
     box.resize(3);
-    box[2] = system->box_first_frame[2];
-    float shift = box[2] * 0.5;
-    float dz = box[2]/float(this->nbins);
+    if (this->iframe == 1){
+        box[2] = system->box_first_frame[2];
+        this->zshift = box[2] * 0.5;
+        this->dz = box[2]/float(this->nbins);
+        this->thetabins = int (180.0 / this->dtheta);
+        this->density_yz.resize(this->nbins,vector<float>(this->thetabins));
+
+    }
 
     //cout <<"dist_crit: " << this->dist_crit<< "  dr: " << dr << " rdf bin: " << nbins << endl;
     //cout << "rdf nbins: " << nbins << endl;
@@ -140,14 +157,18 @@ vector<float> ANALYSIS_ORIENTATION::compute_vector() {
         vector<float> nz = {0.0, 0.0, 1.0};
         costheta = dot_product(plane_norm,nz)/(norm(plane_norm)*norm(nz));
 
+        float theta = acos (costheta) * 180.0 / PI;
+
         float costheta2 = costheta * costheta; 
 
 	//cout << "costheta2: " << costheta2 << endl;
 
-        int izbin = int((r[2] + shift)/dz);
+        int izbin = int((r[2] + this->zshift)/this->dz);
         if (izbin >=0 and izbin < this->nbins) {
             this->rdf_count[izbin] += 1.0;
             costheta2s[izbin] += costheta2;
+            int itheta = int(theta/this->dtheta);
+            if (itheta < this->thetabins) density_yz[izbin][itheta] += 1.0;
         }
     }
 
@@ -156,14 +177,16 @@ vector<float> ANALYSIS_ORIENTATION::compute_vector() {
         if (this->rdf_count[izbin] > 0.000001) {
 	    costheta2s[izbin] = costheta2s[izbin] / this->rdf_count[izbin];
             order_parameters[izbin] = (3.0 * costheta2s[izbin] - 1.0) * 0.5;
-//            order_parameters[izbin] = (3.0 * costheta2s[izbin] - 1.0 ) * 0.5;
-            //order_parameters[izbin] = this->rdf_count[izbin];
         }
- //       cout <<"rdf: " << rdf[ibin] << endl;
     }
 
 /*
 */
+    if (this->iframe == this->every_n_frame * (system->nframes_tot/this->every_n_frame)) {
+        output_density(density_yz);
+        this->density_yz.clear();
+        this->density_yz.resize(this->nbins,vector<float>(this->thetabins,0.0));
+    }
 
     return order_parameters;
 }

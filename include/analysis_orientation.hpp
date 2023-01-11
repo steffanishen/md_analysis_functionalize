@@ -47,10 +47,18 @@ public:
     //
     int iframe;
     string name0;
+    float dz;
+    float zshift;
+    float dtheta;
+    int thetabins;
+    int every_n_frame;
+    vector<vector<float>> density_yz;
+    ofstream *density_file = new ofstream("density_theta_z.dat");
 
-    ANALYSIS_ORIENTATION(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, string name0, string name1, string name2, string name3,  int nbins); //constructor
+    ANALYSIS_ORIENTATION(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, string name0, string name1, string name2, string name3,  int nbins, int every_n_frame,float dtheta); //constructor
     
     void init();
+    void output_density(vector<vector<float>> density_yz);
 
     vector<float> compute_vector();
      

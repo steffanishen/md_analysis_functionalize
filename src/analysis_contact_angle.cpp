@@ -414,7 +414,6 @@ vector<float> ANALYSIS_CONTACT_ANGLE::compute_vector() {
             this->nframes = 0;
 
             this->density_yz.clear();
-
             this->density_yz.resize(this->ybins,vector<float>(this->zbins,0.0));
             this->density_bulk = 0.0;
 
