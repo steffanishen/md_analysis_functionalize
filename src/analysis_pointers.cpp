@@ -274,6 +274,42 @@ vector<ANALYSIS*> ANALYSIS_POINTERS::init() {
                     }
                 }
                 analysis.push_back(new ANALYSIS_RDF(system,sels[groupid],sels[groupid1],vector1d,vector2d,voidf,filename,dist_crit,dr));
+
+        
+        } else if (analysis_opt[0] == "rdf_region") {
+                int groupid;
+                int groupid1;
+                int whichN;
+                float dist_crit;
+                float dr;
+                float zlow;
+                float zhigh;
+                for (int argid = 1; argid < analysis_opt.size(); argid++) {
+                    if (analysis_opt[argid] == "group") {
+                        groupid = stoi(analysis_opt[argid+1]);
+                    } else if (analysis_opt[argid] == "group1") {
+                        groupid1 = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "vector1d") {
+                        vector1d = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "vector2d") {
+                        vector2d = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "voidf") {
+                        voidf = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "filename") {
+                        filename = analysis_opt[argid+1];
+                    }  else if (analysis_opt[argid] == "dist_crit") {
+                        dist_crit = stof(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "dr") {
+                        dr = stof(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "zlow") {
+                        zlow = stof(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "zhigh") {
+                        zhigh = stof(analysis_opt[argid+1]);
+                    }
+                }
+                analysis.push_back(new ANALYSIS_RDF_REGION(system,sels[groupid],sels[groupid1],vector1d,vector2d,voidf,filename,dist_crit,dr,zlow,zhigh));
+
+        
         } else if (analysis_opt[0] == "orientation") {
                 int groupid;
                 int groupid1;

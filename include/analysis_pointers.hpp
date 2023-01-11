@@ -36,6 +36,7 @@
 #include "analysis_shell.hpp"
 #include "analysis_energy.hpp"
 #include "analysis_rdf.hpp"
+#include "analysis_rdf_region.hpp"
 #include "analysis_orientation.hpp"
 #include "analysis_functionalize.hpp"
 #include "analysis_patch_no_order.hpp"

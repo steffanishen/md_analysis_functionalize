@@ -26,12 +26,12 @@
 #include "atom.hpp"
 #include "group.hpp"
 #include "analysis.hpp"
-#ifndef ANALYSIS_ORIENTATION_HPP
-#define	ANALYSIS_ORIENTATION_HPP
+#ifndef ANALYSIS_RDF_REGION_HPP
+#define	ANALYSIS_RDF_REGION_HPP
 
 using namespace std;
 
-class  ANALYSIS_ORIENTATION : public ANALYSIS
+class  ANALYSIS_RDF_REGION : public ANALYSIS
 {
 
 private:
@@ -46,26 +46,16 @@ public:
  //   int whichN;
     //
     int iframe;
-    string name0;
-    float dz;
-    float zshift;
-    float dtheta;
-    int thetabins;
-    int every_n_frame;
-    vector<float> rdf_count_single_frame;
-    vector<vector<float>> density_yz;
-    vector<vector<float>> density_yz_phi;
-    ofstream *density_file = new ofstream("density_theta_z.dat");
-    ofstream *density_phi_file = new ofstream("density_phi_z.dat");
+    float zlow;
+    float zhigh;
 
-    ANALYSIS_ORIENTATION(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, string name0, string name1, string name2, string name3,  int nbins, int every_n_frame,float dtheta); //constructor
+    ANALYSIS_RDF_REGION(PSF *system, GROUP *sel1, GROUP *sel2, int vector1d, int vector2d, int voidf, string filename, float dist_crit, float dr, float zlow, float zhigh); //constructor
     
     void init();
-    void output_density(vector<vector<float>> density_yz, vector<vector<float>> density_yz_phi);
 
     vector<float> compute_vector();
      
-    ~ANALYSIS_ORIENTATION();
+    ~ANALYSIS_RDF_REGION();
 
 };
 
