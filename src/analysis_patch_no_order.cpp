@@ -71,6 +71,7 @@ ANALYSIS_PATCH_NO_ORDER::ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP
     this->pre_crosslinking = pre_crosslinking;
 
     input_cluster = new ifstream(input_cluster_name);
+    linkedlist.clear(); //Meng: clear the linked list
 /*
     try
    {
@@ -114,6 +115,9 @@ ANALYSIS_PATCH_NO_ORDER::ANALYSIS_PATCH_NO_ORDER(PSF *system, GROUP *sel1, GROUP
     system->segid_ind.clear();
     system->resid_ind.clear();
 
+
+// make sure all segid and resid start from 0 but still keep the order from the psf file.
+
     for (int i = 0; i < system->segments.size(); i++) {
         for (int i1 = 0; i1 < system->segments[i].size(); i1++) {
             for (int i2 = 0; i2 < system->segments[i][i1].size(); i2++) {
@@ -156,6 +160,8 @@ vector<vector<vector<int>>> ANALYSIS_PATCH_NO_ORDER::head_cell(vector<vector<int
     return head;
 }
 
+
+//Find the neighbor cell index considering the periodic boundary condition
 int ANALYSIS_PATCH_NO_ORDER::neighbor_cell_ind(int i, int i_incr, int n) {
     int i_adj;
     i_adj = i + i_incr;
@@ -203,6 +209,7 @@ string ANALYSIS_PATCH_NO_ORDER::patchtype(string name1, string resname1, string 
     return patchtype;
 }
 
+// Flag all atoms of a residue for crosslinking
 void ANALYSIS_PATCH_NO_ORDER::flagallinres(int segid_ind, int resid_ind) {
     int natoms = system->segments[segid_ind][resid_ind].size();
     for (int i = 0; i < natoms; i++) {
@@ -211,6 +218,7 @@ void ANALYSIS_PATCH_NO_ORDER::flagallinres(int segid_ind, int resid_ind) {
     }
 }
 
+// Flag all atoms of a residue of a functional group for functionalization 
 void ANALYSIS_PATCH_NO_ORDER::flagallinresiffunctionalized(int segid_ind, int resid_ind) {
     int natoms = system->segments[segid_ind][resid_ind].size();
     int flag_temp = 0;
@@ -230,6 +238,8 @@ void ANALYSIS_PATCH_NO_ORDER::flagallinresiffunctionalized(int segid_ind, int re
     }
 }
 
+// Flag all atoms of a residue of a chain residue (STYR) or crosslinker (DVB) for functionalization 
+ 
 void ANALYSIS_PATCH_NO_ORDER::flagfunctionalizationiffunctionalized(int segid_ind, int resid_ind) {
     int natoms = system->segments[segid_ind][resid_ind].size();
     int flag_temp = 0;
@@ -265,7 +275,7 @@ bool ANALYSIS_PATCH_NO_ORDER::is_empty(std::ifstream *pFile)
 }
 
 
-
+//Initialize each residue as a cluster
 void ANALYSIS_PATCH_NO_ORDER::initialize_clusters() {
     int icluster = 0;
     nresidues = 0;
@@ -285,6 +295,8 @@ void ANALYSIS_PATCH_NO_ORDER::initialize_clusters() {
 
 }
 
+//Initialize each residue of STYR as a chain, and identify their DVB head and tail caps
+
 void ANALYSIS_PATCH_NO_ORDER::initialize_chains() {
     int ichain = 0;
     nresidues = 0;
@@ -296,6 +308,10 @@ void ANALYSIS_PATCH_NO_ORDER::initialize_chains() {
                 CLUSTER *chain_temp = new CLUSTER(ichain);
                 chain_temp->residue_members.push_back({i,i1});
                 
+// Stores the segid and resid of the DVB crosslinker in the chain. But can a chain be connected to multiple DVB?
+// A: A "chain" is either a linear STYR section between 2 DVBs or a dangling STYR chain attached 1 DVB, or an isolated STYR chain
+// Note: Without DVB, STYR can only be linear since each STYR monomer has two polymerization sites only.
+
                 for (int i2 = 0; i2 < system->segments[i][i1].size(); i2++) {
                     int atom_index = system->segments[i][i1][i2];
                     if (system->atomname[atom_index] == "C1") {
@@ -335,7 +351,9 @@ void ANALYSIS_PATCH_NO_ORDER::initialize_chains() {
 
 
 
-
+// Add the segid and resid (cluster_id) of the current cluster to its ancestor cluster (cluster_main_id)
+// // Add the segid and resid (cluster_id) of the kid cluster of the current cluster to its ancestor cluster (cluster_main_id)
+// // Deprecated, seems it's not being used given some issues, for example, the members are not informed of their updated clusters
 void ANALYSIS_PATCH_NO_ORDER::organize_clusters(int cluster_id, int cluster_main_id) {
     if (clusters[cluster_id]->kid_clusters.size() > 0) {
         clusters[cluster_main_id]->residue_members.insert(clusters[cluster_main_id]->residue_members.end(),clusters[cluster_id]->residue_members.begin(),clusters[cluster_id]->residue_members.end());
@@ -375,6 +393,8 @@ void ANALYSIS_PATCH_NO_ORDER::reduce_clusters() {
 
 }
 
+
+// Remove empty clusters
 void ANALYSIS_PATCH_NO_ORDER::reduce_clusters_corr() {
     int icluster = 0;
     int segid_temp;
@@ -404,7 +424,7 @@ void ANALYSIS_PATCH_NO_ORDER::reduce_clusters_corr() {
 
 }
 
-
+//deprecated.
 void ANALYSIS_PATCH_NO_ORDER::reduce_chains_corr() {
     int ichain = 0;
     int segid_temp;
@@ -438,7 +458,7 @@ void ANALYSIS_PATCH_NO_ORDER::reduce_chains_corr() {
 
 
 
-
+// merge clusters, add members of the cluster of larger id to the cluster of the smaller id
 void ANALYSIS_PATCH_NO_ORDER::merge_clusters(int cluster1, int cluster2) {
     int minid = min(cluster1,cluster2);
     int maxid = max(cluster1,cluster2);
@@ -454,17 +474,32 @@ void ANALYSIS_PATCH_NO_ORDER::merge_clusters(int cluster1, int cluster2) {
     clusters[maxid]->cluster_ind = -1;
 }
 
-
+// merge the chains
+// update the head cap of chain 1 and tail cap of chain 2
+// Clear the chain of larger chain id
 void ANALYSIS_PATCH_NO_ORDER::merge_chains(int chain1, int chain2) {
     int minid = min(chain1,chain2);
     int maxid = max(chain1,chain2);
     //clusters[minid]->residue_members.insert(clusters[minid]->residue_members.end(),clusters[maxid]->residue_members.begin(),clusters[maxid]->residue_members.end());
+ // Meng: Seems to be opposite, debug!!
+ //The following debugs!
+ /*
     chains[chain1]->head_C1 = chains[chain2]->head_C1;
-    chains[chain1]->head_cap[0] = chains[chain2]->head_cap[0]; 
-    chains[chain1]->head_cap[1] = chains[chain2]->head_cap[1];
+    chains[chain1]->head_cap[0] = chains[chain2]->head_cap[0];
+    chains[chain1]->head_cap[1] = chains[chain2]->head_cap[1]; 
     chains[chain2]->tail_C2 = chains[chain1]->tail_C2;
     chains[chain2]->tail_cap[0] = chains[chain1]->tail_cap[0];
     chains[chain2]->tail_cap[1] = chains[chain1]->tail_cap[1];
+*/
+    chains[chain2]->head_C1 = chains[chain1]->head_C1;
+    chains[chain2]->head_cap[0] = chains[chain1]->head_cap[0];
+    chains[chain2]->head_cap[1] = chains[chain1]->head_cap[1]; 
+    chains[chain1]->tail_C2 = chains[chain2]->tail_C2;
+    chains[chain1]->tail_cap[0] = chains[chain2]->tail_cap[0];
+    chains[chain1]->tail_cap[1] = chains[chain2]->tail_cap[1];
+
+
+
     for (int i = 0; i < chains[maxid]->residue_members.size(); i++) {
         int segid_temp = chains[maxid]->residue_members[i][0];
         int resid_temp = chains[maxid]->residue_members[i][1];
@@ -481,7 +516,7 @@ void ANALYSIS_PATCH_NO_ORDER::merge_chains(int chain1, int chain2) {
     chains[maxid]->tail_C2 = -1;
 }
 
-
+//Find the clusters of initial structure before crosslinking
 void ANALYSIS_PATCH_NO_ORDER::find_initial_clusters() {
     for (int i = 0; i < system->NBONDS; i++) {
         int iatom = system->ibond[i][0];
@@ -505,6 +540,7 @@ void ANALYSIS_PATCH_NO_ORDER::find_initial_clusters() {
 
 }
 
+//Find the chains of initial structure before crosslinking
 void ANALYSIS_PATCH_NO_ORDER::find_initial_chains() {
     for (int i = 0; i < system->NBONDS; i++) {
         int iatom = system->ibond[i][0];
@@ -536,6 +572,8 @@ void ANALYSIS_PATCH_NO_ORDER::find_initial_chains() {
 
 }
 
+
+//See if the crosslinking forms a ring
 int ANALYSIS_PATCH_NO_ORDER::form_ring_styr(int ind1,int ind2) {
     int form_ring = 0;
     int segid1_ind = system->segid_ind[ind1];
@@ -748,7 +786,7 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
     }
 
 
-
+//Check if the updated selection groups are empty
     vector<int> is_not_empty_group;
     for (int iselpair = 0; iselpair < nsels/2; iselpair++) {
         int is_not_empty_group_temp = 1;
@@ -816,7 +854,10 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
 // Initialize the residue chains
     initialize_chains();
 
-// Merge the initial clusters
+int max_n_chains = chains.size();
+int max_n_clusters = clusters.size();
+
+// Merge the initial clusters and merge the initial chains
     find_initial_clusters(); 
     find_initial_chains(); 
 
@@ -833,7 +874,7 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
                     int ind1 = heads[isel1][i][j][k];
                     while (1) {
                         if (ind1 < 0) break;
-                        r[0] = system->x[ind1];
+                            r[0] = system->x[ind1];
 	                    r[1] = system->y[ind1];
 	                    r[2] = system->z[ind1];
                         for (int iprime = max(-1,-xcount+1); iprime <= min(1,xcount-1); iprime++) {
@@ -1079,9 +1120,34 @@ void ANALYSIS_PATCH_NO_ORDER::compute_void() {
 
     cout << "N_pairs: " << a_ind.size() << endl; 
 
+vector<int> member_in_chains(max_n_chains + 1,0);
+vector<int> member_in_clusters(max_n_clusters + 1,0);
+
+for (auto &chain_temp: chains) {
+    int n_member_in_chains = chain_temp->residue_members.size();
+    member_in_chains[n_member_in_chains] += 1;
+}
+
+for (auto &cluster_temp: clusters) {
+    int n_member_in_clusters = cluster_temp->residue_members.size();
+    member_in_clusters[n_member_in_clusters] += 1;
+}
+
+ofstream *f_chain_distribution = new ofstream("chain_distribution.dat");
+ofstream *f_cluster_distribution = new ofstream("cluster_distribution.dat");
+
+for (int i = 0; i < max_n_chains + 1; i++ ) {
+    *f_chain_distribution << member_in_chains[i] << endl;
+}
+
+for (int i = 0; i < max_n_chains + 1; i++ ) {
+    *f_cluster_distribution << member_in_clusters[i] << endl;
+}
 
 
 }
+
+
 
 
 ANALYSIS_PATCH_NO_ORDER::~ANALYSIS_PATCH_NO_ORDER()

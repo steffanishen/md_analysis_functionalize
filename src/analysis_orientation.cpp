@@ -193,8 +193,8 @@ vector<float> ANALYSIS_ORIENTATION::compute_vector() {
     for (int izbin = 0; izbin < nbins; izbin++) {
         if (this->rdf_count_single_frame[izbin] > 0.000001) {
 	        costheta2s[izbin] = costheta2s[izbin] / float(this->rdf_count_single_frame[izbin]);
+            order_parameters[izbin] = (3.0 * costheta2s[izbin] - 1.0) * 0.5;
         }
-        order_parameters[izbin] = (3.0 * costheta2s[izbin] - 1.0) * 0.5;
     }
 
 /*
