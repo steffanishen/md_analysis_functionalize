@@ -218,6 +218,8 @@ vector<float> ANALYSIS_ORIENTATION_CHAIN::compute_vector() {
  //       fill(this->rdf_count.begin(), this->rdf_count_single_frame.end(),0.0);
     }
 
+
+
     return order_parameters;
 }
 
