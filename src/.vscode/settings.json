@@ -100,5 +100,7 @@
     "typeinfo": "cpp",
     "queue": "cpp",
     "set": "cpp"
-  }
+  },
+  "C_Cpp_Runner.useMsvc": false,
+  "C_Cpp_Runner.useAddressSanitizer": false
 }

@@ -354,6 +354,52 @@ vector<ANALYSIS*> ANALYSIS_POINTERS::init() {
                 analysis.push_back(new ANALYSIS_ORIENTATION(system,sels[groupid],vector1d,vector2d,voidf,filename,name0,name1,name2,name3,nbins,every_n_frame,dtheta));
 
 
+        } else if (analysis_opt[0] == "orientation_chain") {
+                int groupid;
+                int groupid1;
+                int whichN;
+                float dist_crit;
+                int nbins;
+                float dtheta;
+                string name0;
+                string name1;
+                string name2;
+                string name3;
+                int every_n_frame;
+                for (int argid = 1; argid < analysis_opt.size(); argid++) {
+                    if (analysis_opt[argid] == "group") {
+                        groupid = stoi(analysis_opt[argid+1]);
+                    } else if (analysis_opt[argid] == "group1") {
+                        groupid1 = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "vector1d") {
+                        vector1d = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "vector2d") {
+                        vector2d = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "voidf") {
+                        voidf = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "filename") {
+                        filename = analysis_opt[argid+1];
+                    }  else if (analysis_opt[argid] == "name0") {
+                        name0 = analysis_opt[argid+1];
+                    }  else if (analysis_opt[argid] == "name1") {
+                        name1 = analysis_opt[argid+1];
+                    }  else if (analysis_opt[argid] == "name2") {
+                        name2 = analysis_opt[argid+1];
+                    }  else if (analysis_opt[argid] == "name3") {
+                        name3 = analysis_opt[argid+1];
+                    }  else if (analysis_opt[argid] == "nbins") {
+                        nbins = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "every_n_frame") {
+                        every_n_frame = stoi(analysis_opt[argid+1]);
+                    }  else if (analysis_opt[argid] == "dtheta") {
+                        dtheta = stof(analysis_opt[argid+1]);
+                    }
+                }
+                analysis.push_back(new ANALYSIS_ORIENTATION_CHAIN(system,sels[groupid],vector1d,vector2d,voidf,filename,name0,name1,name2,name3,nbins,every_n_frame,dtheta));
+
+
+
+
 
 
 
