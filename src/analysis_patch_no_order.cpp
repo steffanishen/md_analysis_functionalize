@@ -1140,7 +1140,7 @@ for (int i = 0; i < max_n_chains + 1; i++ ) {
     *f_chain_distribution << member_in_chains[i] << endl;
 }
 
-for (int i = 0; i < max_n_chains + 1; i++ ) {
+for (int i = 0; i < max_n_clusters + 1; i++ ) {
     *f_cluster_distribution << member_in_clusters[i] << endl;
 }
 
