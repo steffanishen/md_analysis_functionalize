@@ -223,7 +223,7 @@ void PSF::read_atoms()
     }
 
     getline (psff,lineStr);
-    getline (psff,lineStr); //MSe: Read an additional empty line
+    getline (psff,lineStr);
     istringstream iss1(lineStr);
     iss1 >> NBONDS; 
     alloc_bonds();
@@ -344,7 +344,6 @@ void PSF::read_dihedrals()
     //getline (psff,lineStr);
     istringstream iss(lineStr);
     iss >> NIMPROPERS; 
-    //cout << "ndihedrals: " << NDIHEDRALS <<  "; nimpropers: " << NIMPROPERS << endl;
     alloc_impropers();
 }
 
@@ -382,14 +381,13 @@ void PSF::read_impropers()
 }
 
 void PSF::read_psf() {
-    
     read_header();
     read_atoms();
     read_bonds();
     read_angles();
     read_dihedrals();
     read_impropers();
-    /*
+/*
     for (int i = 0; i < NATOM; i++) {
         //cout << i << " " << nbonds_atom[i] << endl; 
         cout << i << " " << endl;
@@ -398,7 +396,7 @@ void PSF::read_psf() {
         }
         cout << endl;
     }
-    */
+*/
 }
 
 
@@ -602,7 +600,6 @@ PSF::~PSF()
     psff.close();
     
     delete[] atom_index;
-
     delete[] segid;
     delete[] resid;
     delete[] resname;
@@ -612,7 +609,6 @@ PSF::~PSF()
     delete[] mass;
     delete[] beta;
     delete[] nbonds_atom;
-
     for (int i = 0; i < NBONDS; i++) {
         delete[] ibond[i];
     }
@@ -629,7 +625,6 @@ PSF::~PSF()
         delete[] improper[i];
     }
     delete[] improper;
-
     ibond_atom.clear();
     atoms.clear();
     residues.clear();
@@ -644,6 +639,4 @@ PSF::~PSF()
     if (sizeof(z) > 0) {
         delete[] z;
     }
-
-
 }

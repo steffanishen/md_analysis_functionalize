@@ -54,6 +54,7 @@ int main(int argc, char* argv[])
 
     input.read_parameters();
 
+
     string psfname = input.psfname;
     PSF sys(psfname);
 
@@ -82,17 +83,6 @@ int main(int argc, char* argv[])
 //******************************* test atom selection ******************************************************************************
 // ****************************** selection guideline: need a space between '(' and selection option, a space between seletion argument and ')', and a space between the selection option and any arguments. 
 //
-/*
-    t = clock();
-    sys.atoms[0].debug_flag = 1;
-    sys.atoms[0].select_atoms("resname IMP and atomtype NE");
-    sys.atoms[0].select_atoms("resname IMP and atomtype C or resid 1");
-    sys.atoms[0].select_atoms("resname IMP and atomtype C or ( ( not resid 1 ) ) ");
-    sys.atoms[0].select_atoms("not charge > 0.0 and ( resname IMP and atomtype NE or ( ( not resid 1 ) ) )");
-    t = clock() - t;
-    
-    cout << "atomselect cost: " << ((double) t) / CLOCKS_PER_SEC << " seconds" << endl;
-*/
 
 
     t = clock();
@@ -160,6 +150,7 @@ int main(int argc, char* argv[])
     t = clock();
 
 /////////////////////////////////////////////////Initialization of analysis objects goes here!//////////////////////
+
     cout << "before assigning pointers" << endl; // Meng debug
     ANALYSIS_POINTERS ana_pointers(&sys,psels,&input,monomers);
     vector<ANALYSIS*> analysis = ana_pointers.init(); 
@@ -174,10 +165,11 @@ int main(int argc, char* argv[])
     }
 
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////   
 
 //    cout << "Current index: " << analysis[0]->system->NATOM  << endl;
+
+/*
     int iframe = 0;
     ERROR1 error1;
     for (DCD_R* dcdf:dcdfs) {
@@ -191,7 +183,7 @@ int main(int argc, char* argv[])
             }
 
             sys.iframe = iframe;
-        /* analysis goes here */
+        // analysis goes here 
             fprintf(outfile_box, "%10.6f %10.6f %10.6f\n", sys.pbc[0], sys.pbc[2], sys.pbc[5]);
             if (iframe == 0) {
                sys.box_first_frame[0] = sys.pbc[0];
@@ -207,7 +199,6 @@ int main(int argc, char* argv[])
 
 //////////////////// We save output for 2D vectors for later ///////////////////////////
             for (int compID = 0; compID < analysis.size() ; compID++) {
-            //cout << 'during assigning analysis' << endl; //Meng debug
 	        if (analysis[compID]->vector1d == 1) {
 	        vector<float> oned_vector_output = analysis[compID]->compute_vector();
 //	        *files[compID] << "frame: " << i << " : ";
@@ -238,6 +229,7 @@ int main(int argc, char* argv[])
  	psels[i] = NULL;
     }
 
+*/
 
 //////////////testing matrix multiplication////////////////////////////////
 /*
@@ -254,45 +246,13 @@ int main(int argc, char* argv[])
 //////////////////end testing////////////////////////////////////////////
 
 ////////////////testing dot and cross productus/////////////////
-    vector<float> v1 = {1,0,0};
-    vector<float> v2 = {4,5,6};
 
-    float dot = analysis[0]->dot_product(v1,v2);
-    cout << "dot_product: " << dot << endl;
-
-    vector<float> cross = analysis[0]->cross_product(v1,v2);
-    cout << "cross_product: " << cross[0] << " " << cross[1] << " " << cross[2] << endl;
-
-    vector<float> scalar_prod = analysis[0]->scalar_product(v1,2.0);
-    cout << "scalar_product: " << scalar_prod[0] << " " << scalar_prod[1] << " " << scalar_prod[2] << endl;
-
-    vector<float> s = {1,1,1};
-    s = analysis[0]->scalar_product(s,1.0/sqrt(3.0));
-    float theta = 120.0;
-    float theta_rad = theta * 3.1415926 / 180.0;
-
-    vector<float> r2 = analysis[0]->rotate(v1,theta_rad,s);
-    
-    for (int i = 0; i < r2.size(); i++) {
-        cout << r2[i] << " ";
-    }
-    cout << endl;
-
-    float sintheta = sin(theta_rad);
-    float costheta = cos(theta_rad);
-
-    vector<float> r3 = analysis[0]->rotate(v1,sintheta,costheta,s);
-    
-    for (int i = 0; i < r2.size(); i++) {
-        cout << r3[i] << " ";
-    }
-    cout << endl;
 
 //...............end testing////////////////////////////////////
     t = clock() - t;
 
     cout << "reading dcd cost time: " << ((double) t) / CLOCKS_PER_SEC << " seconds" << endl;
-    fclose(outfile_box);   
+//    fclose(outfile_box);   
  
     return EXIT_SUCCESS;
 }

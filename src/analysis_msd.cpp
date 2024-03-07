@@ -77,7 +77,6 @@ vector<float> ANALYSIS_MSD::compute_vector() {
     int frame_stored = system->XS.size();
     int dtmax_current = min(this->dtmax,frame_stored);
 
- 
 
     if (system->iframe > 0) {
 
@@ -85,15 +84,17 @@ vector<float> ANALYSIS_MSD::compute_vector() {
         for (int i=0; i< dtmax_current; i++) {
             int dt = dtmax_current - i;
             for (auto &segment:sel1->segments_ind) {
-	        for (int ind : segment) {
-	            x = system->x[ind];
-	            y = system->y[ind];
-	            z = system->z[ind];
-	            x0 = system->XS[i][ind];
-	            y0 = system->YS[i][ind];
-	            z0 = system->ZS[i][ind];
+	            for (int ind : segment) {
+
+	                x = system->x[ind];
+	                y = system->y[ind];
+	                z = system->z[ind];
+
+	                x0 = system->XS[i][ind];
+	                y0 = system->YS[i][ind];
+	                z0 = system->ZS[i][ind];
  
-		    dx = x-x0;
+		            dx = x-x0;
                     dy = y-y0;
                     dz = z-z0;
 
@@ -101,7 +102,7 @@ vector<float> ANALYSIS_MSD::compute_vector() {
                     this->msd_previous[dt] += dx*dx + dy*dy + dz*dz;
                     this->count[dt] += 1.0;
                 }
-	    }
+	        }
         }
 
         for (int i=0; i< this->dtmax; i++) {
@@ -130,6 +131,7 @@ vector<float> ANALYSIS_MSD::compute_vector() {
         system->ZS.erase(system->ZS.begin());
             
      }
+
 
     return msd;
 }

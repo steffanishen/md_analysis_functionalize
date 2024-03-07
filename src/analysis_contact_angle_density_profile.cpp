@@ -312,7 +312,7 @@ vector<float> ANALYSIS_CONTACT_ANGLE_DENSITY_PROFILE::compute_vector() {
     for (int i=0; i<ytemp.size(); i++) {
         y = ytemp[i];
         z = ztemp[i];
-        iybin = int((y - y_com + yshift)/this->dr);
+        iybin = int((y - y_com + yshift)/this->dr);//adjust the y position such that the com of the droplet is in the center of y-axis. Note: ycom can be close to 0 to begin with.
         izbin = int((z + this->zshift)/this->dr);
         if (izbin >=0 && izbin < this->zbins && iybin >=0 && iybin < ybins) {
             density_yz[iybin][izbin] += 1.0;

@@ -49,7 +49,8 @@ public:
     
     void init();
 
-    vector<vector<float>> compute_2D_vector();
+    //vector<vector<float>> compute_2D_vector();
+    vector<float> compute_vector();
      
     ~ANALYSIS_SHELL();
 

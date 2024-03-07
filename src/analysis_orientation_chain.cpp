@@ -102,7 +102,7 @@ vector<float> ANALYSIS_ORIENTATION_CHAIN::compute_vector() {
         this->zshift = box[2] * 0.5;
         this->dz = box[2]/float(this->nbins);
         this->thetabins = int (180.0 / this->dtheta);
-        this->density_yz.resize(this->thetabins,vector<float>(this->thetabins));
+        this->density_yz.resize(this->thetabins,vector<float>(this->thetabins*2));
         this->costheta2 = 0.0;
     }
 
@@ -115,7 +115,8 @@ vector<float> ANALYSIS_ORIENTATION_CHAIN::compute_vector() {
     //cout << "sel2->NATOM: " << sel2->NATOM << endl; //for debug purpose
 
     int nchains = sel1->segments.size();
- 
+
+
 
     for (auto &segment:sel1->segments) {
         r = residue_com(segment[0]);
@@ -129,9 +130,8 @@ vector<float> ANALYSIS_ORIENTATION_CHAIN::compute_vector() {
         plane_norm_xy_projection[1] = disp[1];
         plane_norm_xy_projection[2] = 0.0;
 
-        vector<float> nz = {0.0, 0.0, 1.0};
+        vector<float> nz = {0.0, 0.0, -1.0};
         //costheta = dot_product(plane_norm,nz)/(norm(plane_norm)*norm(nz));
-        costheta = dot_product(disp,nz)/(norm(disp)*norm(nz));
 
         vector<float> nx = {1.0, 0.0, 0.0};
         cosphi = dot_product(plane_norm_xy_projection,nx)/(norm(plane_norm_xy_projection)*norm(nx));
@@ -139,6 +139,12 @@ vector<float> ANALYSIS_ORIENTATION_CHAIN::compute_vector() {
         float theta = acos (costheta) * 180.0 / PI;
         float phi = acos (cosphi) * 180.0 / PI;
 
+        if (disp[1] < 0.0) {
+            phi = 360.0 - phi;
+        //    theta = PI - theta;
+        }
+
+        costheta = dot_product(disp,nz)/(norm(disp)*norm(nz));
 
 	//cout << "costheta2: " << costheta2 << endl;
 
@@ -146,7 +152,7 @@ vector<float> ANALYSIS_ORIENTATION_CHAIN::compute_vector() {
         int itheta = int(theta/this->dtheta);
         int iphi = int(phi/this->dtheta);
 
-        if (itheta < this->thetabins && iphi < this->thetabins) density_yz[itheta][iphi] += 1.0;
+        if (itheta < this->thetabins && iphi < this->thetabins*2) density_yz[itheta][iphi] += 1.0;
 
     }
 
@@ -156,6 +162,17 @@ vector<float> ANALYSIS_ORIENTATION_CHAIN::compute_vector() {
 
 
     if (this->iframe == this->every_n_frame * (system->nframes_tot/this->every_n_frame)) {
+        for (int ithetabin = 0; ithetabin < this->thetabins; ithetabin ++) {
+            float theta_temp = this->dtheta /180.0 * PI * float(ithetabin);
+            if (theta_temp < 1.0e-9) theta_temp = 1.0e-7;
+	    float sin_theta = sin(theta_temp);
+            cout << "sin_theta: " << sin_theta << endl;
+            for (int iphibin = 0; iphibin < this->thetabins*2; iphibin ++) {
+                if (density_yz[ithetabin][iphibin] > 1.0e-9) {
+                density_yz[ithetabin][iphibin] = density_yz[ithetabin][iphibin]/(float(this->every_n_frame) * float(sel1->segments.size()) * this->dtheta * this->dtheta * sin_theta);
+                }
+           }
+        }
         output_density(density_yz);
         this->density_yz.clear();
         this->density_yz.resize(this->nbins,vector<float>(this->thetabins,0.0));

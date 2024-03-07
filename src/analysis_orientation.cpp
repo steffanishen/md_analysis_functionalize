@@ -118,6 +118,7 @@ vector<float> ANALYSIS_ORIENTATION::compute_vector() {
 
     vector<float> costheta2s(nbins,0.0);
     vector<float> order_parameters(nbins,0.0);
+    
 
     if (sel1->NATOM == 0) error1.error_exit("ERROR: sel1 doesn't contain any atoms!");
     //cout << "sel1->NATOM: " << sel1->NATOM << endl; //for debug purpose
@@ -155,14 +156,20 @@ vector<float> ANALYSIS_ORIENTATION::compute_vector() {
             }
  
 	    }
+    
+
         disp1 = getDistPoints(r1,r2);
         disp2 = getDistPoints(r3,r2);
+
+
 
         vector<float> plane_norm = cross_product(disp1,disp2);
         vector<float> plane_norm_xy_projection(3);
         plane_norm_xy_projection[0] = plane_norm[0];
         plane_norm_xy_projection[1] = plane_norm[1];
         plane_norm_xy_projection[2] = 0.0;
+
+
 
         vector<float> nz = {0.0, 0.0, 1.0};
         costheta = dot_product(plane_norm,nz)/(norm(plane_norm)*norm(nz));
@@ -175,6 +182,10 @@ vector<float> ANALYSIS_ORIENTATION::compute_vector() {
 
         float costheta2 = costheta * costheta;
 
+    //    cout << "sel1 Natoms: " << sel1->NATOM << " disp1: " << disp1[0] << " " << disp1[1] << " " << disp1[2] << endl;
+    //    cout << " disp2: " << disp2[0] << " " << disp2[1] << " " << disp2[2] << endl; // Meng debug
+    //    cout << "norm of plane norm: " << norm(plane_norm) << endl;
+    //    cout << "norm of projected plane norm: " << norm(plane_norm_xy_projection) << endl;
 	//cout << "costheta2: " << costheta2 << endl;
 
         int izbin = int((r[2] + this->zshift)/this->dz);
@@ -187,6 +198,7 @@ vector<float> ANALYSIS_ORIENTATION::compute_vector() {
             int iphi = int(phi/this->dtheta);
             if (iphi < this->thetabins) density_yz_phi[izbin][iphi] += 1.0;
         }
+
     }
 
 
@@ -197,8 +209,7 @@ vector<float> ANALYSIS_ORIENTATION::compute_vector() {
         }
     }
 
-/*
-*/
+
     if (this->iframe == this->every_n_frame * (system->nframes_tot/this->every_n_frame)) {
         //for (int izbin = 0; izbin < nbins; izbin++) {
         //    if (this->rdf_count[izbin] > 0.000001) {
