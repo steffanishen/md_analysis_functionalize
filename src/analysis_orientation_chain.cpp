@@ -37,7 +37,7 @@
 
 using namespace std;
 
-ANALYSIS_ORIENTATION_CHAIN::ANALYSIS_ORIENTATION_CHAIN(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, string name0, string name1, string name2, string name3, int nbins, int every_n_frame,float dtheta)
+ANALYSIS_ORIENTATION_CHAIN::ANALYSIS_ORIENTATION_CHAIN(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, int nbins, int every_n_frame,float dtheta)
 {
     this->system = system;
     this->sel1 = sel1;
@@ -53,9 +53,7 @@ ANALYSIS_ORIENTATION_CHAIN::ANALYSIS_ORIENTATION_CHAIN(PSF *system, GROUP *sel1,
     this->dist_crit = dist_crit;
     this->nbins = nbins;
 //    this->rdf_count.resize(nbins);
-    this->rdf_count_single_frame.resize(nbins);
 //    fill(this->rdf_count.begin(), this->rdf_count.end(),0.0);
-    fill(this->rdf_count_single_frame.begin(), this->rdf_count_single_frame.end(),0.0);
     this->iframe = 0;
     this->dtheta = dtheta;
     this->every_n_frame = every_n_frame;
@@ -66,13 +64,12 @@ ANALYSIS_ORIENTATION_CHAIN::ANALYSIS_ORIENTATION_CHAIN(PSF *system, GROUP *sel1,
 void ANALYSIS_ORIENTATION_CHAIN::init() {
 }
 
-void ANALYSIS_ORIENTATION_CHAIN::output_density(vector<vector<float>> density_yz, vector<vector<float>> density_yz_phi) {
-    for (int izbin=0; izbin < this->nbins; izbin++) {
-        for (int ithetabin=0; ithetabin < this->thetabins; ithetabin++) {
-            float z_contour = this->dz * float(izbin) - this->zshift;
+void ANALYSIS_ORIENTATION_CHAIN::output_density(vector<vector<float>> density_yz) {
+    for (int ithetabin=0; ithetabin < this->thetabins; ithetabin++) {
+        for (int iphibin=0; iphibin < this->thetabins; iphibin++) {
             float theta_contour = this->dtheta * float(ithetabin);
-            if (z_contour >  0.0) *this->density_file << z_contour << " " << theta_contour << " " << density_yz[izbin][ithetabin] << endl;
-            if (z_contour >  0.0) *this->density_phi_file << z_contour << " " << theta_contour << " " << density_yz_phi[izbin][ithetabin] << endl;
+            float phi_contour = this->dtheta * float(iphibin);
+            *this->density_file << theta_contour << " " << phi_contour << " " << density_yz[ithetabin][iphibin] << endl;
         }
     }
 }
@@ -83,8 +80,7 @@ vector<float> ANALYSIS_ORIENTATION_CHAIN::compute_vector() {
     vector<float> r1(3,0.0);
     vector<float> r2(3,0.0);
     vector<float> r3(3,0.0);
-    vector<float> disp1(3,0.0);
-    vector<float> disp2(3,0.0);
+    vector<float> disp(3,0.0);
     float dist2;
     int izbin;
     float Avogadro = 6.02e23;
@@ -98,74 +94,44 @@ vector<float> ANALYSIS_ORIENTATION_CHAIN::compute_vector() {
     float costheta = 0.0;
     float cosphi = 0.0;
     vector<double> box;
+    vector<float> order_parameters(2);
+
     box.resize(3);
     if (this->iframe == 1){
         box[2] = system->box_first_frame[2];
         this->zshift = box[2] * 0.5;
         this->dz = box[2]/float(this->nbins);
         this->thetabins = int (180.0 / this->dtheta);
-        this->density_yz.resize(this->nbins,vector<float>(this->thetabins));
-        this->density_yz_phi.resize(this->nbins,vector<float>(this->thetabins));
-
+        this->density_yz.resize(this->thetabins,vector<float>(this->thetabins));
+        this->costheta2 = 0.0;
     }
 
-    //cout <<"dist_crit: " << this->dist_crit<< "  dr: " << dr << " rdf bin: " << nbins << endl;
-    //cout << "rdf nbins: " << nbins << endl;
 
-    this->rdf_count_single_frame.clear();
-    this->rdf_count_single_frame.resize(nbins);
-    fill(this->rdf_count_single_frame.begin(), this->rdf_count_single_frame.end(),0.0);
 
-    vector<float> costheta2s(nbins,0.0);
-    vector<float> order_parameters(nbins,0.0);
+    float order_parameter;
 
     if (sel1->NATOM == 0) error1.error_exit("ERROR: sel1 doesn't contain any atoms!");
     //cout << "sel1->NATOM: " << sel1->NATOM << endl; //for debug purpose
     //cout << "sel2->NATOM: " << sel2->NATOM << endl; //for debug purpose
-//    cout << "M_PI" << M_PI << endl;// for debug purpose
+
+    int nchains = sel1->segments.size();
  
-    for (auto &residue:sel1->residues) {
-	    for (int ind : residue) {
-            if (system->atomname[ind] == name0) {
-                r[0] = system->x[ind];
-	            r[1] = system->y[ind];
-	            r[2] = system->z[ind];
-                //cout << system->atomname[ind] << endl;
-            }
 
-            if (system->atomname[ind] == name1) {
-                r1[0] = system->x[ind];
-	            r1[1] = system->y[ind];
-	            r1[2] = system->z[ind];
-             //   cout << system->atomname[ind] << endl;
-            }
-	    
-            if (system->atomname[ind] == name2) {
-                r2[0] = system->x[ind];
-	            r2[1] = system->y[ind];
-	            r2[2] = system->z[ind];
-             //   cout << system->atomname[ind] << endl;
-            }
+    for (auto &segment:sel1->segments) {
+        r = residue_com(segment[0]);
+        int nres = segment.size();
+        r1 = residue_com(segment[nres-1]);
+        disp = getDistPoints(r,r1);
 
-            if (system->atomname[ind] == name3) {
-                r3[0] = system->x[ind];
-	            r3[1] = system->y[ind];
-	            r3[2] = system->z[ind];
-             //   cout << system->atomname[ind] << endl;
-            }
- 
-	    }
-        disp1 = getDistPoints(r1,r2);
-        disp2 = getDistPoints(r3,r2);
 
-        vector<float> plane_norm = cross_product(disp1,disp2);
         vector<float> plane_norm_xy_projection(3);
-        plane_norm_xy_projection[0] = plane_norm[0];
-        plane_norm_xy_projection[1] = plane_norm[1];
+        plane_norm_xy_projection[0] = disp[0];
+        plane_norm_xy_projection[1] = disp[1];
         plane_norm_xy_projection[2] = 0.0;
 
         vector<float> nz = {0.0, 0.0, 1.0};
-        costheta = dot_product(plane_norm,nz)/(norm(plane_norm)*norm(nz));
+        //costheta = dot_product(plane_norm,nz)/(norm(plane_norm)*norm(nz));
+        costheta = dot_product(disp,nz)/(norm(disp)*norm(nz));
 
         vector<float> nx = {1.0, 0.0, 0.0};
         cosphi = dot_product(plane_norm_xy_projection,nx)/(norm(plane_norm_xy_projection)*norm(nx));
@@ -173,52 +139,30 @@ vector<float> ANALYSIS_ORIENTATION_CHAIN::compute_vector() {
         float theta = acos (costheta) * 180.0 / PI;
         float phi = acos (cosphi) * 180.0 / PI;
 
-        float costheta2 = costheta * costheta;
 
 	//cout << "costheta2: " << costheta2 << endl;
 
-        int izbin = int((r[2] + this->zshift)/this->dz);
-        if (izbin >=0 and izbin < this->nbins) {
-            this->rdf_count_single_frame[izbin] += 1.0;
-   //         this->rdf_count[izbin] += 1.0;
-            costheta2s[izbin] += costheta2;
-            int itheta = int(theta/this->dtheta);
-            if (itheta < this->thetabins) density_yz[izbin][itheta] += 1.0;
-            int iphi = int(phi/this->dtheta);
-            if (iphi < this->thetabins) density_yz_phi[izbin][iphi] += 1.0;
-        }
+        this->costheta2 += costheta * costheta;
+        int itheta = int(theta/this->dtheta);
+        int iphi = int(phi/this->dtheta);
+
+        if (itheta < this->thetabins && iphi < this->thetabins) density_yz[itheta][iphi] += 1.0;
+
     }
 
 
-    for (int izbin = 0; izbin < nbins; izbin++) {
-        if (this->rdf_count_single_frame[izbin] > 0.000001) {
-	        costheta2s[izbin] = costheta2s[izbin] / float(this->rdf_count_single_frame[izbin]);
-            order_parameters[izbin] = (3.0 * costheta2s[izbin] - 1.0) * 0.5;
-        }
-    }
+	this->costheta2 = this->costheta2 / float(nchains);
+    order_parameter = (3.0 * this->costheta2 - 1.0) * 0.5;
 
-/*
-*/
+
     if (this->iframe == this->every_n_frame * (system->nframes_tot/this->every_n_frame)) {
-        //for (int izbin = 0; izbin < nbins; izbin++) {
-        //    if (this->rdf_count[izbin] > 0.000001) {
-        //        for (int iabin = 0; iabin < this->thetabins; iabin++) {
-        //            density_yz[izbin][iabin] = density_yz[izbin][iabin] / float(this->rdf_count[izbin] * this->thetabins); 
-        //            density_yz_phi[izbin][iabin] = density_yz[izbin][iabin] / float(this->rdf_count[izbin] * this->thetabins); 
-        //        }
-        //    }
-        //}
-        output_density(density_yz, density_yz_phi);
+        output_density(density_yz);
         this->density_yz.clear();
         this->density_yz.resize(this->nbins,vector<float>(this->thetabins,0.0));
-        this->density_yz_phi.clear();
-        this->density_yz_phi.resize(this->nbins,vector<float>(this->thetabins,0.0));
- //       this->rdf_count.clear();
- //       this->rdf_count.resize(nbins);
- //       fill(this->rdf_count.begin(), this->rdf_count_single_frame.end(),0.0);
     }
 
-
+    order_parameters[0] = this->iframe;
+    order_parameters[1] = order_parameter;
 
     return order_parameters;
 }
@@ -230,6 +174,5 @@ ANALYSIS_ORIENTATION_CHAIN::~ANALYSIS_ORIENTATION_CHAIN()
     sel1 = NULL;
     sel2 = NULL;
  //   this->rdf_count.clear();
-    this->rdf_count_single_frame.clear();
 }
 

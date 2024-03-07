@@ -706,6 +706,24 @@ vector<int> ANALYSIS::heapSort(vector<float>& arr, int n)
 }
 
 
+vector<float> ANALYSIS::residue_com(vector<int> residue)
+{
+    vector<float> com(3,0.0);
+    float mass = 0.0;
+    for (int ind : residue) {
+        mass += system->atoms[ind].mass;
+        com[0] += system->x[ind] * system->atoms[ind].mass;
+        com[1] += system->y[ind] * system->atoms[ind].mass;
+        com[2] += system->z[ind] * system->atoms[ind].mass;
+    }
+    
+    for (int i = 0; i < 3; i++) {
+        com[i] = com[i]/mass;
+    }
+
+    return com;
+}
+
 void ANALYSIS::compute_void() {
 }
 

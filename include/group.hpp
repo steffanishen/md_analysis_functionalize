@@ -45,6 +45,8 @@ public:
     vector<int> atomids;    
 
     vector<vector<float>> anglezs;
+
+
     //coordinates stored in simple precision (IMPORTANT)
     
     //protected methods

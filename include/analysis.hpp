@@ -168,6 +168,7 @@ public:
 
     void heapify(vector<float>& arr, vector<int>& a_ind, int n, int i);
     vector<int> heapSort(vector<float>& arr, int n);
+    vector<float> residue_com(vector<int> residue);
 
     virtual void compute_void();
  

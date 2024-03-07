@@ -52,16 +52,16 @@ public:
     float dtheta;
     int thetabins;
     int every_n_frame;
+    float costheta2;
     vector<float> rdf_count_single_frame;
     vector<vector<float>> density_yz;
     vector<vector<float>> density_yz_phi;
-    ofstream *density_file = new ofstream("density_theta_z.dat");
-    ofstream *density_phi_file = new ofstream("density_phi_z.dat");
+    ofstream *density_file = new ofstream("density_theta_phi.dat");
 
-    ANALYSIS_ORIENTATION_CHAIN(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename, string name0, string name1, string name2, string name3,  int nbins, int every_n_frame,float dtheta); //constructor
+    ANALYSIS_ORIENTATION_CHAIN(PSF *system, GROUP *sel1, int vector1d, int vector2d, int voidf, string filename,  int nbins, int every_n_frame,float dtheta); //constructor
     
     void init();
-    void output_density(vector<vector<float>> density_yz, vector<vector<float>> density_yz_phi);
+    void output_density(vector<vector<float>> density_yz);
 
     vector<float> compute_vector();
      
