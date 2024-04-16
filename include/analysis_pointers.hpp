@@ -32,6 +32,7 @@
 #include "analysis_rotate.hpp"
 #include "analysis_packing.hpp"
 #include "analysis_density_profile.hpp"
+#include "analysis_charge_density_profile.hpp"
 #include "analysis_density_profile_droplet.hpp"
 #include "analysis_shell.hpp"
 #include "analysis_energy.hpp"
