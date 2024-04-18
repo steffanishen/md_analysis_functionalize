@@ -75,11 +75,25 @@ vector<float> ANALYSIS_CHARGE_DENSITY_PROFILE::compute_vector() {
 
     for (auto &segment:sel1->segments_ind) {
 	    for (int ind : segment) {
-	        z = system->z[ind];
-            izbin = int((z+shift)/dz);
-            if (izbin >=0 and izbin < this->nbins) {
-                profile[izbin] += system->atoms[ind].charge; 
+            if (system->z[ind] < -shift) {
+	            z = system->z[ind] + box[2] + shift;
+            } else if (system->z[ind] >= shift) {
+	            z = system->z[ind] - box[2] + shift;
+            } else {
+	            z = system->z[ind] + shift;
             }
+            izbin = int((z)/dz);
+
+            if (izbin == this->nbins) izbin -= 1;
+        // Meng comment: debug
+            if (izbin < 0 or izbin >= this->nbins) {
+                  cout << "z position is: " << system->z[ind] << "; lz is: " << box[2] << "; shift is: " << shift << "; izbin is: " << izbin << endl;
+        //        exit(0);
+            }
+        // Meng comment: end of debug
+
+
+            profile[izbin] += system->atoms[ind].charge; 
 	    }
     }
 
