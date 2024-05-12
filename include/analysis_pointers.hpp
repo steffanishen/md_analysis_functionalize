@@ -35,6 +35,7 @@
 #include "analysis_charge_density_profile.hpp"
 #include "analysis_density_profile_droplet.hpp"
 #include "analysis_shell.hpp"
+#include "analysis_shell_output_coord.hpp"
 #include "analysis_energy.hpp"
 #include "analysis_rdf.hpp"
 #include "analysis_rdf_region.hpp"

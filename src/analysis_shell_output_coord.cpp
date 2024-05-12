@@ -138,4 +138,5 @@ ANALYSIS_SHELL_OUTPUT_COORD::~ANALYSIS_SHELL_OUTPUT_COORD()
     system = NULL;
     sel1 = NULL;
     sel2 = NULL;
+    this->coord_file->close();
 }

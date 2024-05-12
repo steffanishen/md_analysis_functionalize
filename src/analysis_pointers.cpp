@@ -255,6 +255,37 @@ vector<ANALYSIS*> ANALYSIS_POINTERS::init() {
 		    }
 		}
         	analysis.push_back(new ANALYSIS_SHELL(system,sels[groupid],sels[groupid1],vector1d,vector2d,voidf,filename,nbins,dist_crit));
+
+        } else if (analysis_opt[0] == "nshell_coord") {
+		int groupid;
+		int groupid1;
+	 	int whichN;
+                int nbins;
+                float dist_crit;
+		for (int argid = 1; argid < analysis_opt.size(); argid++) {
+		    if (analysis_opt[argid] == "group") {
+			groupid = stoi(analysis_opt[argid+1]);
+		    } else if (analysis_opt[argid] == "group1") {
+			groupid1 = stoi(analysis_opt[argid+1]);
+		    }  else if (analysis_opt[argid] == "vector1d") {
+			vector1d = stoi(analysis_opt[argid+1]);
+		    }  else if (analysis_opt[argid] == "vector2d") {
+			vector2d = stoi(analysis_opt[argid+1]);
+		    }  else if (analysis_opt[argid] == "voidf") {
+			voidf = stoi(analysis_opt[argid+1]);
+		    }  else if (analysis_opt[argid] == "filename") {
+			filename = analysis_opt[argid+1];
+		    }  else if (analysis_opt[argid] == "nbins") {
+			nbins = stoi(analysis_opt[argid+1]);
+		    }  else if (analysis_opt[argid] == "dist_crit") {
+			dist_crit = stof(analysis_opt[argid+1]);
+		    }
+		}
+        	analysis.push_back(new ANALYSIS_SHELL_OUTPUT_COORD(system,sels[groupid],sels[groupid1],vector1d,vector2d,voidf,filename,nbins,dist_crit));
+
+
+
+
         } else if (analysis_opt[0] == "inter_energy") {
 		int groupid;
 		int groupid1;
